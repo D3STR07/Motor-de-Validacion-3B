@@ -1,0 +1,278 @@
+export const EXPEDIENTES_INICIALES = [
+  {
+    id: "EXP-2026-001",
+    inmueble: "Local Calz. Ignacio Zaragoza #1420, Iztapalapa",
+    cliente: "Inmobiliaria del Centro S.A.",
+    fechaSubida: "21/11/2026 - 09:45 AM",
+    progreso: 100,
+    etapaActual: "Dictamen generado",
+    recomendacion: "Requiere revisión",
+    resumenEjecutivo:
+      "Uso de suelo comercial compatible (HM/4/20) y titularidad acreditada sin gravámenes, pero existe una discrepancia de 40 m² entre las escrituras y la boleta predial, además de una condicionante de cajones de estacionamiento.",
+    validacionCruzada: [
+      {
+        campo: "Propietario / Titular",
+        estado: "coincide",
+        escrituras: "Inmobiliaria del Centro S.A. (Folio Mercantil 84920)",
+        predial: "Inmobiliaria del Centro S.A.",
+        alineamiento: "No aplica",
+        usoSuelo: "Inmobiliaria del Centro S.A.",
+      },
+      {
+        campo: "Dirección del Inmueble",
+        estado: "coincide",
+        escrituras: "Calz. Ignacio Zaragoza 1420, Col. Juan Escutia, Iztapalapa, CP 09100",
+        predial: "Calz. Ignacio Zaragoza 1420, Col. Juan Escutia, CP 09100",
+        alineamiento: "Calz. Ignacio Zaragoza 1420, Col. Juan Escutia",
+        usoSuelo: "Calz. Ignacio Zaragoza 1420, Col. Juan Escutia, CP 09100",
+      },
+      {
+        campo: "Número Oficial Asignado",
+        estado: "coincide",
+        escrituras: "Núm. Oficial 1420 (Antes Lote 14)",
+        predial: "Ext. 1420",
+        alineamiento: "Núm. Oficial 1420 (Ratificado)",
+        usoSuelo: "Núm. 1420",
+      },
+      {
+        campo: "Identificación del Predio / Clave Catastral",
+        estado: "coincide",
+        escrituras: "Lote 14, Manzana 8, Región 34 (Folio Real 992831)",
+        predial: "Cuenta Predial: 034-128-14-000-8",
+        alineamiento: "Manzana 8, Lote 14 (Región 34)",
+        usoSuelo: "Cuenta Catastral: 034-128-14-000-8",
+      },
+      {
+        campo: "Superficie del Terreno",
+        estado: "discrepancia",
+        escrituras: "520.00 m²",
+        predial: "480.00 m²",
+        alineamiento: "520.00 m²",
+        usoSuelo: "520.00 m²",
+        alerta: "Diferencia de 40 m² en Boleta Predial respecto a Escritura Pública y Alineamiento.",
+      },
+      {
+        campo: "Vigencia y Estatus Fiscal / Legal",
+        estado: "coincide",
+        escrituras: "Inscrita en RPP sin gravámenes vigentes",
+        predial: "Pagado al bimestre 6/2026 (Sin adeudos)",
+        alineamiento: "Vigente hasta 31/Dic/2026",
+        usoSuelo: "Certificado vigente (Folio 48291-2026)",
+      },
+      {
+        campo: "Giro Comercial / Uso Autorizado",
+        estado: "coincide",
+        escrituras: "Predio urbano apto para uso comercial",
+        predial: "Uso registrado: Comercial",
+        alineamiento: "Alineamiento comercial en vialidad primaria",
+        usoSuelo: "HM/4/20 - Abarrotes y Autoservicio permitido",
+      },
+    ],
+    documentos: [
+      {
+        tipo: "Escrituras",
+        nombreArchivo: "escritura_publica_4592.pdf",
+        estatus: "Válido",
+        hallazgos: [
+          {
+            regla: "Acreditación de propiedad",
+            detalle: "Titularidad verificada a favor de Inmobiliaria del Centro S.A. sin gravámenes.",
+            evidencia: "Pág. 1, Cláusula Primera: 'Adquiere en pleno dominio el predio de 520.00 m²...'",
+          },
+          {
+            regla: "Identificación registral",
+            detalle: "Folio Real 992831 inscrito en el Registro Público de la Propiedad.",
+            evidencia: "Pág. 4, Sello de inscripción RPP CDMX.",
+          },
+        ],
+      },
+      {
+        tipo: "Predial",
+        nombreArchivo: "boleta_predial_2026.pdf",
+        estatus: "Inconsistencia",
+        hallazgos: [
+          {
+            regla: "Cruce de superficie",
+            detalle: "Superficie registrada (480 m²) menor a la escritura (520 m²).",
+            evidencia: "Recuadro Datos del Predio, Campo 'Sup. Terreno': 480.00 m².",
+          },
+          {
+            regla: "Estatus de pago",
+            detalle: "Cuenta 034-128-14-000-8 al corriente de pagos fiscales.",
+            evidencia: "Sección Estado de Cuenta: 'Sin adeudos anteriores'.",
+          },
+        ],
+      },
+      {
+        tipo: "Alineamiento y Número Oficial",
+        nombreArchivo: "alineamiento_vigente.pdf",
+        estatus: "Válido",
+        hallazgos: [
+          {
+            regla: "Vigencia y número oficial",
+            detalle: "Documento vigente hasta Dic 2026. Número oficial 1420 confirmado.",
+            evidencia: "Sello Alcaldía Iztapalapa, Folio AL-2026-883.",
+          },
+          {
+            regla: "Restricción vial",
+            detalle: "Sin afectación por ampliación de vialidad primaria.",
+            evidencia: "Pág. 1, Croquis de alineamiento: 'Paramento respetado al 100%'.",
+          },
+        ],
+      },
+      {
+        tipo: "Uso de Suelo",
+        nombreArchivo: "certificado_zonificacion.pdf",
+        estatus: "Con condicionantes",
+        hallazgos: [
+          {
+            regla: "Compatibilidad comercial",
+            detalle: "Zonificación HM/4/20 permite tienda de autoservicio / abarrotes.",
+            evidencia: "Pág. 1, Tabla de Usos Permitidos: 'Comercio al por menor de productos básicos'.",
+          },
+          {
+            regla: "Restricciones",
+            detalle: "Exige acreditar 6 cajones de estacionamiento y área de carga.",
+            evidencia: "Pág. 2, Nota 4: 'Deberá contar con área de carga y 6 cajones.'",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "EXP-2026-002",
+    inmueble: "Local Av. División del Norte #2410, Benito Juárez",
+    cliente: "Desarrollos Patrimoniales MX S.A.",
+    fechaSubida: "21/11/2026 - 08:30 AM",
+    progreso: 100,
+    etapaActual: "Dictamen generado",
+    recomendacion: "Cumple",
+    resumenEjecutivo:
+      "Expediente aprobado sin observaciones. Todas las superficies (610.00 m²), titularidad, claves catastrales y números oficiales coinciden al 100% entre los 4 documentos y el uso de suelo comercial está plenamente autorizado sin condicionantes restrictivas.",
+    validacionCruzada: [
+      {
+        campo: "Propietario / Titular",
+        estado: "coincide",
+        escrituras: "Desarrollos Patrimoniales MX S.A.",
+        predial: "Desarrollos Patrimoniales MX S.A.",
+        alineamiento: "No aplica",
+        usoSuelo: "Desarrollos Patrimoniales MX S.A.",
+      },
+      {
+        campo: "Dirección del Inmueble",
+        estado: "coincide",
+        escrituras: "Av. División del Norte 2410, Col. Portales Norte, Benito Juárez",
+        predial: "Av. División del Norte 2410, Col. Portales Norte, CP 03300",
+        alineamiento: "Av. División del Norte 2410, Col. Portales Norte",
+        usoSuelo: "Av. División del Norte 2410, Col. Portales Norte, CP 03300",
+      },
+      {
+        campo: "Número Oficial Asignado",
+        estado: "coincide",
+        escrituras: "Núm. Oficial 2410",
+        predial: "Ext. 2410",
+        alineamiento: "Núm. Oficial 2410 (Confirmado)",
+        usoSuelo: "Núm. 2410",
+      },
+      {
+        campo: "Identificación del Predio / Clave Catastral",
+        estado: "coincide",
+        escrituras: "Predio Fracción B, Manzana 12 (Folio Real 110492)",
+        predial: "Cuenta Predial: 019-402-12-004-1",
+        alineamiento: "Manzana 12, Fracción B",
+        usoSuelo: "Cuenta Catastral: 019-402-12-004-1",
+      },
+      {
+        campo: "Superficie del Terreno",
+        estado: "coincide",
+        escrituras: "610.00 m²",
+        predial: "610.00 m²",
+        alineamiento: "610.00 m²",
+        usoSuelo: "610.00 m²",
+      },
+      {
+        campo: "Vigencia y Estatus Fiscal / Legal",
+        estado: "coincide",
+        escrituras: "Libre de gravamen (Certificado RPP vigente)",
+        predial: "Pagado anual 2026 (Folio pago 99210)",
+        alineamiento: "Vigente hasta 31/Dic/2026",
+        usoSuelo: "Certificado vigente (Folio 77310-2026)",
+      },
+      {
+        campo: "Giro Comercial / Uso Autorizado",
+        estado: "coincide",
+        escrituras: "Inmueble comercial",
+        predial: "Uso registrado: Comercial",
+        alineamiento: "Corredor comercial autorizado",
+        usoSuelo: "HC/5/20 - Tienda de Autoservicio autorizada sin restricciones",
+      },
+    ],
+    documentos: [
+      {
+        tipo: "Escrituras",
+        nombreArchivo: "escritura_div_norte_2410.pdf",
+        estatus: "Válido",
+        hallazgos: [
+          {
+            regla: "Acreditación de propiedad",
+            detalle: "Propiedad plena acreditada y libre de gravámenes.",
+            evidencia: "Pág. 2, Cláusula Segunda: 'Superficie total de 610.00 m² sin limitaciones de dominio'.",
+          },
+        ],
+      },
+      {
+        tipo: "Predial",
+        nombreArchivo: "predial_pagado_2026.pdf",
+        estatus: "Válido",
+        hallazgos: [
+          {
+            regla: "Cruce de superficie y pagos",
+            detalle: "Superficie exacta de 610.00 m² y pagos al corriente.",
+            evidencia: "Recuadro Superior: 'Sup. Terreno: 610.00 m² | Adeudo: $0.00'.",
+          },
+        ],
+      },
+      {
+        tipo: "Alineamiento y Número Oficial",
+        nombreArchivo: "alineamiento_bj_2410.pdf",
+        estatus: "Válido",
+        hallazgos: [
+          {
+            regla: "Alineamiento y vigencia",
+            detalle: "Núm. Oficial 2410 vigente y sin restricciones viales.",
+            evidencia: "Sello Alcaldía Benito Juárez, Folio BJ-AL-2026-104.",
+          },
+        ],
+      },
+      {
+        tipo: "Uso de Suelo",
+        nombreArchivo: "uso_suelo_hc520.pdf",
+        estatus: "Válido",
+        hallazgos: [
+          {
+            regla: "Compatibilidad comercial 3B",
+            detalle: "Autoriza comercio de abarrotes y autoservicio en planta baja.",
+            evidencia: "Pág. 1, Dictamen: 'Uso Comercial Permitido en hasta 610.00 m²'.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "EXP-2026-003",
+    inmueble: "Predio Av. Tláhuac #3890, Col. Los Olivos",
+    cliente: "Constructora Sur S. de R.L.",
+    fechaSubida: "21/11/2026 - 10:12 AM",
+    progreso: 65,
+    etapaActual: "Agente de Validación Cruzada analizando superficies...",
+    recomendacion: "En proceso",
+    resumenEjecutivo: "Análisis multiagente en curso. Extracción OCR completada al 100%.",
+    validacionCruzada: [],
+    documentos: [
+      { tipo: "Escrituras", nombreArchivo: "esc_tlahuac.pdf", estatus: "Analizando", hallazgos: [] },
+      { tipo: "Predial", nombreArchivo: "predial_tlahuac.pdf", estatus: "Analizando", hallazgos: [] },
+      { tipo: "Alineamiento y Número Oficial", nombreArchivo: "no_oficial.pdf", estatus: "Analizando", hallazgos: [] },
+      { tipo: "Uso de Suelo", nombreArchivo: "uso_suelo_tlahuac.pdf", estatus: "Analizando", hallazgos: [] },
+    ],
+  },
+];
