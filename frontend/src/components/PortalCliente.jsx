@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import logo3b from "../img/logo1.png";
 import { enviarExpedienteCompleto } from "../services/api";
@@ -55,8 +56,14 @@ const DOCUMENTOS_REQUERIDOS = [
   },
 ];
 
-const EXTENSIONES_VALIDAS = [".pdf", ".png", ".jpg", ".jpeg"];
-const ARCHIVOS_VACIOS = { escrituras: null, predial: null, alineamiento: null, usoSuelo: null };
+const EXTENSIONES_VALIDAS = [".pdf"];
+
+const ARCHIVOS_VACIOS = {
+  escrituras: null,
+  predial: null,
+  alineamiento: null,
+  usoSuelo: null,
+};
 
 const formatearTamano = (bytes) =>
   bytes < 1024 * 1024
@@ -64,7 +71,9 @@ const formatearTamano = (bytes) =>
     : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 
 const esArchivoValido = (file) =>
-  EXTENSIONES_VALIDAS.some((ext) => file.name.toLowerCase().endsWith(ext));
+  EXTENSIONES_VALIDAS.some((ext) =>
+    file.name.toLowerCase().endsWith(ext)
+  );
 
 function Anillo({ listos, total, tam = "h-36 w-36" }) {
   const [mostrandoLogo, setMostrandoLogo] = useState(false);
@@ -73,9 +82,11 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
   useEffect(() => {
     if (listos === total && prevListos.current < total) {
       setMostrandoLogo(true);
+
       const timer = setTimeout(() => {
         setMostrandoLogo(false);
       }, 2200);
+
       prevListos.current = listos;
       return () => clearTimeout(timer);
     }
@@ -83,6 +94,7 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
     if (listos < total) {
       setMostrandoLogo(false);
     }
+
     prevListos.current = listos;
   }, [listos, total]);
 
@@ -101,7 +113,15 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
       )}
 
       <svg viewBox="0 0 128 128" className="relative h-full w-full -rotate-90">
-        <circle cx="64" cy="64" r={r} fill="none" stroke="rgba(15,23,42,0.08)" strokeWidth="10" />
+        <circle
+          cx="64"
+          cy="64"
+          r={r}
+          fill="none"
+          stroke="rgba(15,23,42,0.08)"
+          strokeWidth="10"
+        />
+
         <circle
           cx="64"
           cy="64"
@@ -118,7 +138,9 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
 
       <div
         className={`absolute inset-0 z-10 overflow-hidden rounded-full bg-[#e81c24] shadow-md transition-all duration-500 ${
-          mostrandoLogo ? "scale-100 opacity-100" : "pointer-events-none scale-75 opacity-0"
+          mostrandoLogo
+            ? "scale-100 opacity-100"
+            : "pointer-events-none scale-75 opacity-0"
         }`}
       >
         <img
@@ -147,7 +169,9 @@ function ModalAlerta({ alerta, onCerrar }) {
 
   return (
     <div
-      onMouseDown={(e) => e.target === e.currentTarget && onCerrar()}
+      onMouseDown={(e) =>
+        e.target === e.currentTarget && onCerrar()
+      }
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-md transition-opacity"
     >
       <div
@@ -171,6 +195,7 @@ function ModalAlerta({ alerta, onCerrar }) {
         <h3 className={`${DISPLAY} mt-5 text-2xl font-bold leading-tight text-slate-900`}>
           {alerta.titulo}
         </h3>
+
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           {alerta.mensaje}
         </p>
@@ -191,7 +216,7 @@ function ModalAlerta({ alerta, onCerrar }) {
         <button
           type="button"
           onClick={onCerrar}
-          className="mt-7 w-full cursor-pointer rounded-full bg-[#e81c24] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] transition hover:bg-[#f0262e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
+          className="mt-7 w-full cursor-pointer rounded-full bg-[#e81c24] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] transition hover:bg-[#f0262e]"
         >
           {alerta.textoBoton || "Entendido, completar datos"}
         </button>
@@ -211,46 +236,68 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
   const [recienCargado, setRecienCargado] = useState(null);
   const [errores, setErrores] = useState({});
   const [alertaModal, setAlertaModal] = useState(null);
+
   const inputsRef = useRef({});
 
   const handleArchivoChange = (id, file) => {
     if (!file) return;
+
     if (!esArchivoValido(file)) {
-      const msg = "Solo se aceptan archivos en formato PDF, PNG o JPG.";
+      const msg = "Solo se aceptan archivos en formato PDF.";
+
       setErrores((prev) => ({ ...prev, [id]: msg }));
+
       setAlertaModal({
         titulo: "Formato de archivo no válido",
-        mensaje: `El archivo "${file.name}" no se puede subir. Por favor elige una foto o documento válido.`,
-        pendientes: ["Formatos permitidos: PDF, PNG o JPG"],
+        mensaje: `El archivo "${file.name}" no se puede subir. Selecciona un documento PDF.`,
+        pendientes: ["Formato permitido: PDF"],
       });
+
       return;
     }
+
     setErrores((prev) => ({ ...prev, [id]: null }));
     setArchivos((prev) => ({ ...prev, [id]: file }));
     setRecienCargado(id);
-    setTimeout(() => setRecienCargado((actual) => (actual === id ? null : actual)), 800);
+
+    setTimeout(() => {
+      setRecienCargado((actual) =>
+        actual === id ? null : actual
+      );
+    }, 800);
   };
 
   const quitarArchivo = (id) => {
     setArchivos((prev) => ({ ...prev, [id]: null }));
-    if (inputsRef.current[id]) inputsRef.current[id].value = "";
+
+    if (inputsRef.current[id]) {
+      inputsRef.current[id].value = "";
+    }
   };
 
   const listos = Object.values(archivos).filter(Boolean).length;
   const total = DOCUMENTOS_REQUERIDOS.length;
-  const todosSubidos = inmueble.trim() !== "" && cliente.trim() !== "" && listos === total;
+
+  const todosSubidos =
+    inmueble.trim() !== "" &&
+    cliente.trim() !== "" &&
+    listos === total;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (enviando) return;
 
     const pendientes = [];
+
     if (inmueble.trim() === "") {
       pendientes.push("Escribir el nombre o dirección del inmueble");
     }
+
     if (cliente.trim() === "") {
       pendientes.push("Escribir el nombre del propietario o corredor");
     }
+
     DOCUMENTOS_REQUERIDOS.forEach((doc) => {
       if (!archivos[doc.id]) {
         pendientes.push(`Subir documento: ${doc.titulo}`);
@@ -260,10 +307,10 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
     if (pendientes.length > 0) {
       setAlertaModal({
         titulo: "Aún faltan datos por completar",
-        mensaje:
-          "Para que nuestro equipo pueda revisar tu local sin contratiempos, por favor completa lo siguiente:",
+        mensaje: "Completa los siguientes datos para enviar el expediente:",
         pendientes,
       });
+
       return;
     }
 
@@ -279,18 +326,22 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
       });
 
       onEnviarExpediente(expedienteProcesado);
+
       setEnviando(false);
       setEnviado(true);
+
     } catch (err) {
       setEnviando(false);
+
       setAlertaModal({
         titulo: "No se pudo completar el envío",
         mensaje:
           err.message ||
-          "Hubo un problema al comunicarse con el servidor. Verifica que el backend esté encendido.",
+          "Hubo un problema al comunicarse con el servidor.",
         pendientes: [
-          "Revisa que el servidor FastAPI esté corriendo en el puerto 8000",
-          "Verifica que los archivos no estén dañados o vacíos",
+          "Comprueba que el backend esté encendido en el puerto 8000.",
+          "Comprueba que el motor de agentes esté encendido en el puerto 8001.",
+          "Verifica que los archivos sean documentos PDF válidos.",
         ],
         textoBoton: "Entendido",
       });
@@ -307,31 +358,37 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
     setAlertaModal(null);
   };
 
-  /* ---------- Confirmación ---------- */
   if (enviado) {
     return (
       <div className="relative z-10 px-4 py-14 text-slate-900">
         <div className={`${PANEL} mx-auto flex max-w-lg flex-col items-center p-8 text-center sm:p-10`}>
           <Anillo listos={total} total={total} tam="h-32 w-32" />
-          <h2 className={`${DISPLAY} mt-6 text-2xl font-bold sm:text-3xl`}>Todo en camino</h2>
+
+          <h2 className={`${DISPLAY} mt-6 text-2xl font-bold sm:text-3xl`}>
+            Todo en camino
+          </h2>
+
           <p className="mt-2 max-w-sm text-sm leading-relaxed text-slate-600">
-            Los 4 documentos de <strong className="text-slate-900">{inmueble}</strong> ya fueron
-            procesados por nuestro sistema de 3B.
+            Los 4 documentos de{" "}
+            <strong className="text-slate-900">{inmueble}</strong>{" "}
+            fueron enviados al sistema de validación de 3B.
           </p>
+
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             {onVolver && (
               <button
                 type="button"
                 onClick={onVolver}
-                className="cursor-pointer rounded-full bg-[#e81c24] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] transition hover:bg-[#f0262e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
+                className="cursor-pointer rounded-full bg-[#e81c24] px-6 py-3 text-sm font-semibold text-white"
               >
                 Volver a mis locales
               </button>
             )}
+
             <button
               type="button"
               onClick={reiniciar}
-              className="cursor-pointer rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
+              className="cursor-pointer rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white"
             >
               Subir otro inmueble
             </button>
@@ -341,45 +398,44 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
     );
   }
 
-  /* ---------- Formulario ---------- */
   return (
     <div className="relative z-10 mx-auto max-w-4xl space-y-5 px-4 py-8 text-slate-900 sm:px-6 sm:py-10">
-      <ModalAlerta alerta={alertaModal} onCerrar={() => setAlertaModal(null)} />
+      <ModalAlerta
+        alerta={alertaModal}
+        onCerrar={() => setAlertaModal(null)}
+      />
 
       {onVolver && (
         <button
           type="button"
           onClick={onVolver}
           disabled={enviando}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#e81c24] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] transition hover:bg-[#f0262e] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
+          className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#e81c24] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
         >
           <ArrowLeft className="h-4 w-4" /> Volver
         </button>
       )}
 
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
-        {/* Datos del predio */}
+
         <div className={`${PANEL} p-6 sm:p-8`}>
           <h2 className={`${DISPLAY} text-3xl font-bold leading-tight sm:text-4xl`}>
             Registra un nuevo predio o local
           </h2>
+
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-500">
-            Sube los 4 documentos legales y nuestro equipo lo revisará.
+            Sube los 4 documentos legales en PDF para iniciar la revisión.
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div>
-              <label
-                htmlFor="inmueble"
-                className="mb-1.5 flex items-center justify-between text-sm font-medium text-slate-700"
-              >
-                <span>Nombre o dirección del inmueble</span>
-                {inmueble.trim() === "" && (
-                  <span className="text-xs font-medium text-[#e81c24]">* Obligatorio</span>
-                )}
+              <label htmlFor="inmueble" className="mb-1.5 block text-sm font-medium text-slate-700">
+                Nombre o dirección del inmueble
               </label>
+
               <div className="relative">
                 <Building className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+
                 <input
                   id="inmueble"
                   type="text"
@@ -391,18 +447,15 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                 />
               </div>
             </div>
+
             <div>
-              <label
-                htmlFor="cliente"
-                className="mb-1.5 flex items-center justify-between text-sm font-medium text-slate-700"
-              >
-                <span>Propietario o corredor que envía</span>
-                {cliente.trim() === "" && (
-                  <span className="text-xs font-medium text-[#e81c24]">* Obligatorio</span>
-                )}
+              <label htmlFor="cliente" className="mb-1.5 block text-sm font-medium text-slate-700">
+                Propietario o corredor que envía
               </label>
+
               <div className="relative">
                 <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+
                 <input
                   id="cliente"
                   type="text"
@@ -417,29 +470,28 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
           </div>
         </div>
 
-        {/* Progreso y envío */}
-        <div
-          className={`${PANEL} flex flex-col items-center justify-between gap-6 p-6 sm:p-8 md:flex-row`}
-        >
+        <div className={`${PANEL} flex flex-col items-center justify-between gap-6 p-6 sm:p-8 md:flex-row`}>
           <div className="flex flex-col items-center gap-6 sm:flex-row">
             <Anillo listos={listos} total={total} />
+
             <div className="w-full min-w-0">
               <p className={`${DISPLAY} text-lg font-bold`}>
                 {listos}/{total} documentos listos
               </p>
+
               <ul className="mt-3 space-y-2">
                 {DOCUMENTOS_REQUERIDOS.map((doc) => {
                   const ok = Boolean(archivos[doc.id]);
+
                   return (
                     <li key={doc.id} className="flex items-center gap-2.5 text-sm">
-                      <span
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${
-                          ok ? "bg-emerald-500 text-white" : "border border-slate-300"
-                        }`}
-                      >
+                      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                        ok ? "bg-emerald-500 text-white" : "border border-slate-300"
+                      }`}>
                         {ok && <Check className="h-3 w-3" strokeWidth={3} />}
                       </span>
-                      <span className={`truncate ${ok ? "text-slate-900" : "text-slate-500"}`}>
+
+                      <span className={ok ? "text-slate-900" : "text-slate-500"}>
                         {doc.titulo}
                       </span>
                     </li>
@@ -453,10 +505,10 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
             <button
               type="submit"
               disabled={enviando}
-              className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition-all duration-300 disabled:cursor-wait focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24] ${
+              className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition-all disabled:cursor-wait ${
                 todosSubidos || enviando
-                  ? "bg-[#e81c24] text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] hover:bg-[#f0262e]"
-                  : "bg-slate-900/[0.06] text-slate-500 hover:bg-slate-900/[0.11] hover:text-slate-700"
+                  ? "bg-[#e81c24] text-white shadow-lg"
+                  : "bg-slate-900/[0.06] text-slate-500"
               }`}
             >
               {enviando ? (
@@ -471,17 +523,17 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                 </>
               )}
             </button>
+
             <p className="mt-2.5 text-center text-xs text-slate-500">
               {enviando
-                ? "Por favor no cierres esta ventana mientras procesamos los archivos..."
+                ? "Procesando documentos, no cierres esta ventana..."
                 : todosSubidos
                   ? "¡Todo listo! Ya puedes enviar tus documentos."
-                  : "Los 4 documentos son obligatorios para que nuestro equipo revise que todos tus papeles coincidan."}
+                  : "Los 4 documentos PDF son obligatorios."}
             </p>
           </div>
         </div>
 
-        {/* Zonas de carga */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {DOCUMENTOS_REQUERIDOS.map((doc) => {
             const archivo = archivos[doc.id];
@@ -495,21 +547,29 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                 key={doc.id}
                 onDragOver={(e) => {
                   e.preventDefault();
-                  if (!enviando && arrastrando !== doc.id) setArrastrando(doc.id);
+                  if (!enviando) setArrastrando(doc.id);
                 }}
                 onDragEnter={(e) => {
                   e.preventDefault();
                   if (!enviando) setArrastrando(doc.id);
                 }}
                 onDragLeave={(e) => {
-                  if (!e.currentTarget.contains(e.relatedTarget)) setArrastrando(null);
+                  if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setArrastrando(null);
+                  }
                 }}
                 onDrop={(e) => {
                   e.preventDefault();
                   setArrastrando(null);
-                  if (!enviando) handleArchivoChange(doc.id, e.dataTransfer.files?.[0]);
+
+                  if (!enviando) {
+                    handleArchivoChange(
+                      doc.id,
+                      e.dataTransfer.files?.[0]
+                    );
+                  }
                 }}
-                className={`${PANEL_BASE} p-5 transition duration-300 motion-reduce:transition-none ${
+                className={`${PANEL_BASE} p-5 transition duration-300 ${
                   activa
                     ? "scale-[1.02] border-[#e81c24]/70 bg-[#e81c24]/10"
                     : archivo
@@ -521,15 +581,14 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                   <div className="flex items-start gap-3.5">
                     <div className="relative shrink-0">
                       {pulso && (
-                        <span className="absolute inset-0 animate-ping rounded-2xl bg-emerald-400/50 motion-reduce:hidden" />
+                        <span className="absolute inset-0 animate-ping rounded-2xl bg-emerald-400/50" />
                       )}
-                      <div
-                        className={`relative flex h-11 w-11 items-center justify-center rounded-2xl transition-colors duration-300 ${
-                          archivo
-                            ? "bg-emerald-500 text-white"
-                            : "bg-slate-900/[0.06] text-slate-700"
-                        }`}
-                      >
+
+                      <div className={`relative flex h-11 w-11 items-center justify-center rounded-2xl ${
+                        archivo
+                          ? "bg-emerald-500 text-white"
+                          : "bg-slate-900/[0.06] text-slate-700"
+                      }`}>
                         {archivo ? (
                           <Check className="h-5 w-5" strokeWidth={3} />
                         ) : (
@@ -537,21 +596,23 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                         )}
                       </div>
                     </div>
+
                     <div className="min-w-0">
-                      <h3 className={`${DISPLAY} text-base font-bold`}>{doc.titulo}</h3>
+                      <h3 className={`${DISPLAY} text-base font-bold`}>
+                        {doc.titulo}
+                      </h3>
+
                       <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
                         {doc.descripcion}
                       </p>
                     </div>
                   </div>
 
-                  <span
-                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                      archivo
-                        ? "bg-emerald-500/15 text-emerald-700"
-                        : "bg-amber-500/15 text-amber-800"
-                    }`}
-                  >
+                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                    archivo
+                      ? "bg-emerald-500/15 text-emerald-700"
+                      : "bg-amber-500/15 text-amber-800"
+                  }`}>
                     {archivo ? "Listo" : "Falta"}
                   </span>
                 </div>
@@ -560,52 +621,62 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                   {archivo ? (
                     <div className="flex items-center gap-3 rounded-2xl bg-slate-900/[0.04] px-3 py-2.5">
                       <FileText className="h-5 w-5 shrink-0 text-emerald-600" />
+
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-slate-900">
                           {archivo.name}
                         </p>
+
                         <p className="text-xs text-slate-500">
                           {formatearTamano(archivo.size)}
                         </p>
                       </div>
+
                       <button
                         type="button"
                         disabled={enviando}
                         onClick={() => quitarArchivo(doc.id)}
                         aria-label={`Quitar ${doc.titulo}`}
-                        className="cursor-pointer rounded-full p-1.5 text-slate-500 transition hover:bg-slate-900/[0.06] hover:text-slate-900 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[#e81c24]"
+                        className="cursor-pointer rounded-full p-1.5 text-slate-500 hover:bg-slate-900/[0.06] disabled:opacity-40"
                       >
                         <X className="h-4 w-4" />
                       </button>
                     </div>
                   ) : (
-                    <label
-                      className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed px-4 py-7 text-center transition ${
-                        activa
-                          ? "border-[#e81c24] bg-[#e81c24]/10 text-slate-900"
-                          : "border-slate-300 bg-white/50 text-slate-600 hover:border-slate-400 hover:bg-white/80"
-                      }`}
-                    >
-                      <Upload
-                        className={`h-5 w-5 transition-transform ${activa ? "-translate-y-1" : ""}`}
-                      />
+                    <label className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed px-4 py-7 text-center transition ${
+                      activa
+                        ? "border-[#e81c24] bg-[#e81c24]/10 text-slate-900"
+                        : "border-slate-300 bg-white/50 text-slate-600 hover:border-slate-400 hover:bg-white/80"
+                    }`}>
+                      <Upload className="h-5 w-5" />
+
                       <span className="text-sm font-medium">
-                        {activa ? "Suéltalo aquí" : "Arrastra tu archivo o haz clic"}
+                        {activa
+                          ? "Suéltalo aquí"
+                          : "Arrastra tu archivo o haz clic"}
                       </span>
-                      <span className="text-xs text-slate-500">PDF, PNG o JPG</span>
+
+                      <span className="text-xs text-slate-500">
+                        Solo documentos PDF
+                      </span>
+
                       <input
                         ref={(el) => (inputsRef.current[doc.id] = el)}
                         type="file"
                         disabled={enviando}
-                        accept=".pdf,.png,.jpg,.jpeg"
+                        accept=".pdf,application/pdf"
                         className="sr-only"
-                        onChange={(e) => handleArchivoChange(doc.id, e.target.files[0])}
+                        onChange={(e) =>
+                          handleArchivoChange(doc.id, e.target.files[0])
+                        }
                       />
                     </label>
                   )}
+
                   {error && (
                     <p className="mt-2 flex items-center gap-1.5 text-xs text-red-600">
-                      <AlertCircle className="h-3.5 w-3.5" /> {error}
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      {error}
                     </p>
                   )}
                 </div>
