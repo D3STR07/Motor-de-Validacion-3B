@@ -22,7 +22,8 @@ import {
   Check,
 } from "lucide-react";
 
-const DISPLAY = "font-['Bricolage_Grotesque',ui-sans-serif,system-ui,sans-serif]";
+const DISPLAY =
+  "font-['Bricolage_Grotesque',ui-sans-serif,system-ui,sans-serif]";
 
 const PANEL_BASE =
   "rounded-3xl border backdrop-blur-2xl shadow-[0_20px_50px_-24px_rgba(90,40,40,0.28),inset_0_1px_0_rgba(255,255,255,0.9)]";
@@ -47,7 +48,10 @@ const getBadgeRecomendacion = (rec) => {
 
 const getEstado = (exp) => {
   if (exp.recomendacion === "Cumple") return "aprobado";
-  if (exp.recomendacion === "Requiere revisión" || exp.recomendacion === "No cumple")
+  if (
+    exp.recomendacion === "Requiere revisión" ||
+    exp.recomendacion === "No cumple"
+  )
     return "revision";
   return "analisis";
 };
@@ -60,10 +64,30 @@ const FILTROS = [
 ];
 
 const AGENTES = [
-  { id: "clasificador", nombre: "Clasificador", descripcion: "Identifica cada documento", Icono: Layers },
-  { id: "extractor", nombre: "Extractor", descripcion: "Lee campos y textos clave", Icono: FileSearch },
-  { id: "cruzado", nombre: "Validador cruzado", descripcion: "Compara las 4 fuentes", Icono: GitCompare },
-  { id: "dictaminador", nombre: "Dictaminador", descripcion: "Emite la recomendación", Icono: Gavel },
+  {
+    id: "clasificador",
+    nombre: "Clasificador",
+    descripcion: "Identifica cada documento",
+    Icono: Layers,
+  },
+  {
+    id: "extractor",
+    nombre: "Extractor",
+    descripcion: "Lee campos y textos clave",
+    Icono: FileSearch,
+  },
+  {
+    id: "cruzado",
+    nombre: "Validador cruzado",
+    descripcion: "Compara las 4 fuentes",
+    Icono: GitCompare,
+  },
+  {
+    id: "dictaminador",
+    nombre: "Dictaminador",
+    descripcion: "Emite la recomendación",
+    Icono: Gavel,
+  },
 ];
 
 const CAMPOS_MATRIZ = ["escrituras", "predial", "alineamiento", "usoSuelo"];
@@ -84,19 +108,24 @@ const normalizar = (v) => {
 // Devuelve las columnas cuyo valor se aparta del consenso de la fila
 const celdasDiscrepantes = (fila) => {
   if (fila.estado === "coincide") return [];
-  const valores = CAMPOS_MATRIZ.map((campo) => ({ campo, norm: normalizar(fila[campo]) })).filter(
-    (v) => v.norm !== ""
-  );
+  const valores = CAMPOS_MATRIZ.map((campo) => ({
+    campo,
+    norm: normalizar(fila[campo]),
+  })).filter((v) => v.norm !== "");
   if (valores.length === 0) return [];
 
   const frecuencia = {};
   valores.forEach((v) => (frecuencia[v.norm] = (frecuencia[v.norm] || 0) + 1));
   const max = Math.max(...Object.values(frecuencia));
-  const candidatos = Object.keys(frecuencia).filter((k) => frecuencia[k] === max);
+  const candidatos = Object.keys(frecuencia).filter(
+    (k) => frecuencia[k] === max,
+  );
 
   // En empate, las escrituras mandan como fuente de verdad
   const normEscrituras = normalizar(fila.escrituras);
-  const referencia = candidatos.includes(normEscrituras) ? normEscrituras : candidatos[0];
+  const referencia = candidatos.includes(normEscrituras)
+    ? normEscrituras
+    : candidatos[0];
 
   return valores.filter((v) => v.norm !== referencia).map((v) => v.campo);
 };
@@ -115,7 +144,7 @@ function BadgeDictamen({ recomendacion, className = "" }) {
   return (
     <span
       className={`inline-flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium ${getBadgeRecomendacion(
-        recomendacion
+        recomendacion,
       )} ${className}`}
     >
       {recomendacion}
@@ -154,9 +183,14 @@ function BarraProgreso({ exp }) {
           const umbralFin = (paso + 1) * 25;
           const llenado = Math.min(
             100,
-            Math.max(0, ((exp.progreso - umbralInicio) / (umbralFin - umbralInicio)) * 100)
+            Math.max(
+              0,
+              ((exp.progreso - umbralInicio) / (umbralFin - umbralInicio)) *
+                100,
+            ),
           );
-          const activo = exp.progreso > umbralInicio && exp.progreso < umbralFin;
+          const activo =
+            exp.progreso > umbralInicio && exp.progreso < umbralFin;
 
           return (
             <div
@@ -169,8 +203,8 @@ function BarraProgreso({ exp }) {
                   completo
                     ? "bg-emerald-500"
                     : activo
-                    ? "animate-pulse bg-gradient-to-r from-[#e81c24] to-amber-500"
-                    : "bg-[#e81c24]"
+                      ? "animate-pulse bg-gradient-to-r from-[#e81c24] to-amber-500"
+                      : "bg-[#e81c24]"
                 }`}
                 style={{ width: `${llenado}%` }}
               />
@@ -186,12 +220,16 @@ function ItemKpi({ Icono, etiqueta, valor, total, tono, barra }) {
   return (
     <div className="p-5">
       <div className="flex items-center gap-2 text-sm text-slate-600">
-        <span className={`flex h-6 w-6 items-center justify-center rounded-full ${tono}`}>
+        <span
+          className={`flex h-6 w-6 items-center justify-center rounded-full ${tono}`}
+        >
           <Icono className="h-3.5 w-3.5" />
         </span>
         {etiqueta}
       </div>
-      <p className={`${DISPLAY} mt-3 text-4xl font-bold leading-none tabular-nums text-slate-900`}>
+      <p
+        className={`${DISPLAY} mt-3 text-4xl font-bold leading-none tabular-nums text-slate-900`}
+      >
         {valor}
       </p>
       <div className="mt-4 h-1 overflow-hidden rounded-full bg-slate-900/[0.06]">
@@ -210,7 +248,14 @@ function AnilloMini({ valor }) {
   return (
     <div className="relative h-16 w-16 shrink-0">
       <svg viewBox="0 0 64 64" className="h-full w-full -rotate-90">
-        <circle cx="32" cy="32" r={r} fill="none" stroke="rgba(15,23,42,0.08)" strokeWidth="6" />
+        <circle
+          cx="32"
+          cy="32"
+          r={r}
+          fill="none"
+          stroke="rgba(15,23,42,0.08)"
+          strokeWidth="6"
+        />
         <circle
           cx="32"
           cy="32"
@@ -236,7 +281,9 @@ function AnilloMini({ valor }) {
 function Stepper({ progreso }) {
   return (
     <div className={`${PANEL} p-5 sm:p-6`}>
-      <h3 className={`${DISPLAY} mb-5 text-base font-bold text-slate-900`}>Avance de los agentes</h3>
+      <h3 className={`${DISPLAY} mb-5 text-base font-bold text-slate-900`}>
+        Avance de los agentes
+      </h3>
       <ol className="flex flex-col gap-5 md:flex-row md:gap-0">
         {AGENTES.map((agente, i) => {
           const estado = getEstadoAgente(progreso, i);
@@ -249,38 +296,50 @@ function Stepper({ progreso }) {
                     estado === "completo"
                       ? "bg-emerald-500 text-white"
                       : estado === "activo"
-                      ? "bg-[#e81c24] text-white shadow-[0_0_0_6px_rgba(232,28,36,0.22)]"
-                      : "bg-slate-900/[0.06] text-slate-500"
+                        ? "bg-[#e81c24] text-white shadow-[0_0_0_6px_rgba(232,28,36,0.22)]"
+                        : "bg-slate-900/[0.06] text-slate-500"
                   }`}
                 >
                   {estado === "completo" ? (
                     <Check className="h-5 w-5" strokeWidth={3} />
                   ) : (
-                    <Icono className={`h-5 w-5 ${estado === "activo" ? "animate-pulse" : ""}`} />
+                    <Icono
+                      className={`h-5 w-5 ${estado === "activo" ? "animate-pulse" : ""}`}
+                    />
                   )}
                 </span>
                 {i < AGENTES.length - 1 && (
                   <span
                     className={`mx-3 hidden h-px flex-1 md:block ${
-                      estado === "completo" ? "bg-emerald-400" : "bg-slate-900/10"
+                      estado === "completo"
+                        ? "bg-emerald-400"
+                        : "bg-slate-900/10"
                     }`}
                   />
                 )}
               </div>
               <div className="min-w-0 pr-2">
-                <p className="text-sm font-semibold text-slate-900">{agente.nombre}</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {agente.nombre}
+                </p>
                 <p
                   className={`text-xs ${
                     estado === "completo"
                       ? "text-emerald-700"
                       : estado === "activo"
-                      ? "text-red-600"
-                      : "text-slate-500"
+                        ? "text-red-600"
+                        : "text-slate-500"
                   }`}
                 >
-                  {estado === "completo" ? "Completado" : estado === "activo" ? "Trabajando ahora" : "En espera"}
+                  {estado === "completo"
+                    ? "Completado"
+                    : estado === "activo"
+                      ? "Trabajando ahora"
+                      : "En espera"}
                 </p>
-                <p className="mt-0.5 text-xs text-slate-500">{agente.descripcion}</p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {agente.descripcion}
+                </p>
               </div>
             </li>
           );
@@ -295,7 +354,10 @@ function CeldaValor({ valor, discrepante }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/15 px-2 py-1 font-medium text-amber-700 ring-1 ring-inset ring-amber-500/40">
       {valor}
-      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label="Valor discrepante" />
+      <AlertTriangle
+        className="h-3.5 w-3.5 shrink-0 text-amber-500"
+        aria-label="Valor discrepante"
+      />
     </span>
   );
 }
@@ -337,16 +399,22 @@ function ModalEvidencia({ doc, onClose }) {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <FileText className="h-4 w-4 shrink-0 text-[#e81c24]" />
-              <h3 className={`${DISPLAY} truncate text-lg font-bold`}>{doc.tipo}</h3>
+              <h3 className={`${DISPLAY} truncate text-lg font-bold`}>
+                {doc.tipo}
+              </h3>
               <span
                 className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  analizando ? "bg-sky-500/10 text-sky-700" : "bg-slate-900/[0.06] text-slate-700"
+                  analizando
+                    ? "bg-sky-500/10 text-sky-700"
+                    : "bg-slate-900/[0.06] text-slate-700"
                 }`}
               >
                 {doc.estatus}
               </span>
             </div>
-            <p className="mt-0.5 truncate text-xs text-slate-500">{doc.nombreArchivo}</p>
+            <p className="mt-0.5 truncate text-xs text-slate-500">
+              {doc.nombreArchivo}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -443,7 +511,12 @@ export default function BandejaAdmin({ expedientes }) {
   const cerrarVista = useCallback(() => setDocVista(null), []);
 
   const conteos = useMemo(() => {
-    const c = { todos: expedientes.length, aprobado: 0, revision: 0, analisis: 0 };
+    const c = {
+      todos: expedientes.length,
+      aprobado: 0,
+      revision: 0,
+      analisis: 0,
+    };
     expedientes.forEach((e) => (c[getEstado(e)] += 1));
     return c;
   }, [expedientes]);
@@ -453,14 +526,18 @@ export default function BandejaAdmin({ expedientes }) {
     return expedientes.filter((e) => {
       const okFiltro = filtro === "todos" || getEstado(e) === filtro;
       const okBusqueda =
-        q === "" || [e.id, e.inmueble, e.cliente].some((x) => String(x).toLowerCase().includes(q));
+        q === "" ||
+        [e.id, e.inmueble, e.cliente].some((x) =>
+          String(x).toLowerCase().includes(q),
+        );
       return okFiltro && okBusqueda;
     });
   }, [expedientes, filtro, busqueda]);
 
   /* ---------- Vista detalle ---------- */
   if (seleccionado) {
-    const exp = expedientes.find((e) => e.id === seleccionado.id) || seleccionado;
+    const exp =
+      expedientes.find((e) => e.id === seleccionado.id) || seleccionado;
     const matriz = exp.validacionCruzada || [];
     const discrepancias = matriz.filter((f) => f.estado !== "coincide").length;
     const correctos = matriz.length - discrepancias;
@@ -468,14 +545,17 @@ export default function BandejaAdmin({ expedientes }) {
     return (
       <div className="relative z-10 mx-auto max-w-7xl space-y-5 px-4 py-6 text-slate-900 sm:px-6 sm:py-8">
         <button
+          type="button"
           onClick={() => setSeleccionado(null)}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-900/[0.07] bg-white/70 px-4 py-2 text-sm font-medium text-slate-700 backdrop-blur-xl transition hover:bg-slate-900/10 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
+          className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#e81c24] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] transition hover:bg-[#f0262e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
         >
           <ArrowLeft className="h-4 w-4" /> Volver a la bandeja
         </button>
 
         {/* Encabezado del dictamen */}
-        <div className={`${PANEL} flex flex-col justify-between gap-5 p-5 sm:p-7 md:flex-row md:items-center`}>
+        <div
+          className={`${PANEL} flex flex-col justify-between gap-5 p-5 sm:p-7 md:flex-row md:items-center`}
+        >
           <div className="min-w-0">
             <div className="mb-2.5 flex flex-wrap items-center gap-3">
               <span className="rounded-full bg-slate-900/[0.06] px-2.5 py-0.5 font-mono text-xs text-slate-700">
@@ -485,14 +565,23 @@ export default function BandejaAdmin({ expedientes }) {
                 <Clock className="h-3.5 w-3.5" /> Subido: {exp.fechaSubida}
               </span>
             </div>
-            <h2 className={`${DISPLAY} text-2xl font-bold leading-tight sm:text-3xl`}>{exp.inmueble}</h2>
-            <p className="mt-1 text-sm text-slate-500">Remitente: {exp.cliente}</p>
+            <h2
+              className={`${DISPLAY} text-2xl font-bold leading-tight sm:text-3xl`}
+            >
+              {exp.inmueble}
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Remitente: {exp.cliente}
+            </p>
           </div>
 
           <div className="flex items-center justify-between gap-4 md:justify-end">
             <div className="md:text-right">
               <p className="mb-1.5 text-xs text-slate-500">Dictamen IA</p>
-              <BadgeDictamen recomendacion={exp.recomendacion} className="px-4 py-1.5 text-sm" />
+              <BadgeDictamen
+                recomendacion={exp.recomendacion}
+                className="px-4 py-1.5 text-sm"
+              />
             </div>
             <AnilloMini valor={exp.progreso} />
           </div>
@@ -507,7 +596,9 @@ export default function BandejaAdmin({ expedientes }) {
           <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-amber-700">
             <Sparkles className="h-4 w-4" /> Conclusión del agente dictaminador
           </div>
-          <p className="text-sm leading-relaxed text-slate-700">{exp.resumenEjecutivo}</p>
+          <p className="text-sm leading-relaxed text-slate-700">
+            {exp.resumenEjecutivo}
+          </p>
         </div>
 
         {/* Matriz de validación cruzada */}
@@ -519,7 +610,8 @@ export default function BandejaAdmin({ expedientes }) {
                   Matriz de validación cruzada entre documentos
                 </h3>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Comparación automática de titularidad, superficies, catastro y ubicación entre las 4 fuentes.
+                  Comparación automática de titularidad, superficies, catastro y
+                  ubicación entre las 4 fuentes.
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2 text-xs font-medium">
@@ -549,10 +641,15 @@ export default function BandejaAdmin({ expedientes }) {
                     const malas = celdasDiscrepantes(fila);
                     return (
                       <tr key={idx}>
-                        <td className="px-5 py-3.5 font-medium text-slate-900">{fila.campo}</td>
+                        <td className="px-5 py-3.5 font-medium text-slate-900">
+                          {fila.campo}
+                        </td>
                         {CAMPOS_MATRIZ.map((campo) => (
                           <td key={campo} className="px-4 py-3.5">
-                            <CeldaValor valor={fila[campo]} discrepante={malas.includes(campo)} />
+                            <CeldaValor
+                              valor={fila[campo]}
+                              discrepante={malas.includes(campo)}
+                            />
                           </td>
                         ))}
                         <td className="px-4 py-3.5">
@@ -563,9 +660,12 @@ export default function BandejaAdmin({ expedientes }) {
                           ) : (
                             <div>
                               <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-700">
-                                <AlertTriangle className="h-3.5 w-3.5" /> Discrepancia
+                                <AlertTriangle className="h-3.5 w-3.5" />{" "}
+                                Discrepancia
                               </span>
-                              <p className="mt-1 max-w-[230px] text-xs text-amber-700">{fila.alerta}</p>
+                              <p className="mt-1 max-w-[230px] text-xs text-amber-700">
+                                {fila.alerta}
+                              </p>
                             </div>
                           )}
                         </td>
@@ -587,7 +687,9 @@ export default function BandejaAdmin({ expedientes }) {
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#e81c24]/20 text-[#e81c24]">
                     <FileText className="h-5 w-5" />
                   </span>
-                  <h4 className={`${DISPLAY} truncate text-base font-bold`}>{doc.tipo}</h4>
+                  <h4 className={`${DISPLAY} truncate text-base font-bold`}>
+                    {doc.tipo}
+                  </h4>
                 </div>
                 <span className="shrink-0 rounded-full bg-slate-900/[0.06] px-3 py-1 text-xs font-medium text-slate-700">
                   {doc.estatus}
@@ -595,7 +697,9 @@ export default function BandejaAdmin({ expedientes }) {
               </div>
 
               <div className="mb-4 flex items-center justify-between gap-2 rounded-2xl bg-slate-900/[0.04] px-3.5 py-2.5 text-xs">
-                <span className="truncate text-slate-500">{doc.nombreArchivo}</span>
+                <span className="truncate text-slate-500">
+                  {doc.nombreArchivo}
+                </span>
                 <button
                   onClick={() => setDocVista(doc)}
                   className="ml-2 flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
@@ -607,11 +711,16 @@ export default function BandejaAdmin({ expedientes }) {
               {doc.hallazgos.length > 0 ? (
                 <div className="space-y-3">
                   {doc.hallazgos.map((h, i) => (
-                    <div key={i} className="border-l-2 border-[#e81c24] py-0.5 pl-3 text-xs">
+                    <div
+                      key={i}
+                      className="border-l-2 border-[#e81c24] py-0.5 pl-3 text-xs"
+                    >
                       <p className="font-medium text-slate-900">
                         {h.regla}: {h.detalle}
                       </p>
-                      <p className="mt-0.5 italic text-slate-500">Evidencia: {h.evidencia}</p>
+                      <p className="mt-0.5 italic text-slate-500">
+                        Evidencia: {h.evidencia}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -634,7 +743,9 @@ export default function BandejaAdmin({ expedientes }) {
     <div className="relative z-10 mx-auto max-w-7xl px-4 py-6 text-slate-900 sm:px-6 sm:py-8">
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h2 className={`${DISPLAY} text-3xl font-bold leading-tight sm:text-4xl`}>
+          <h2
+            className={`${DISPLAY} text-3xl font-bold leading-tight sm:text-4xl`}
+          >
             Bandeja de expedientes
           </h2>
           <p className="mt-1.5 text-sm text-slate-500">
@@ -721,8 +832,12 @@ export default function BandejaAdmin({ expedientes }) {
       {filtrados.length === 0 ? (
         <div className={`${PANEL} px-6 py-14 text-center`}>
           <Search className="mx-auto mb-3 h-6 w-6 text-slate-400" />
-          <p className={`${DISPLAY} text-lg font-bold`}>No hay expedientes con ese criterio</p>
-          <p className="mt-1 text-sm text-slate-500">Prueba con otro filtro o borra la búsqueda.</p>
+          <p className={`${DISPLAY} text-lg font-bold`}>
+            No hay expedientes con ese criterio
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Prueba con otro filtro o borra la búsqueda.
+          </p>
           {(filtro !== "todos" || busqueda) && (
             <button
               onClick={() => {
@@ -747,8 +862,12 @@ export default function BandejaAdmin({ expedientes }) {
                   <Building2 className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
-                  <span className="block font-mono text-xs text-slate-500">{exp.id}</span>
-                  <span className="block truncate font-semibold text-slate-900">{exp.inmueble}</span>
+                  <span className="block font-mono text-xs text-slate-500">
+                    {exp.id}
+                  </span>
+                  <span className="block truncate font-semibold text-slate-900">
+                    {exp.inmueble}
+                  </span>
                   <span className="flex items-center gap-1.5 truncate text-xs text-slate-500">
                     {exp.cliente}
                   </span>
