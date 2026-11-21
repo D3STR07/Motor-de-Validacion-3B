@@ -1,10 +1,13 @@
+
+import os
+import shutil
+from pathlib import Path
+
 import fitz
 import cv2
 import numpy as np
 import pytesseract
-import json
 
-from pathlib import Path
 from pytesseract import Output
 
 
@@ -12,39 +15,30 @@ from pytesseract import Output
 # 1. CONFIGURACIÓN
 # ==================================================
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+IDIOMA_OCR = "spa"
 
-CARPETA_DOCUMENTOS = (
-    BASE_DIR / "documentos_originales"
-)
-
-CARPETA_SALIDA = BASE_DIR / "resultados"
-
-pytesseract.pytesseract.tesseract_cmd = (
+RUTA_TESSERACT_WINDOWS = (
     r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 )
 
-IDIOMA_OCR = "spa"
+TESSERACT_CMD = os.getenv("TESSERACT_CMD")
 
+if TESSERACT_CMD:
+    pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
 
-# ==================================================
-# 2. IDENTIFICAR TIPO DE DOCUMENTO
-# ==================================================
-
-def obtener_tipo_documento(ruta_pdf):
-
-    ruta_relativa = ruta_pdf.relative_to(
-        CARPETA_DOCUMENTOS
+elif os.name == "nt":
+    pytesseract.pytesseract.tesseract_cmd = (
+        RUTA_TESSERACT_WINDOWS
     )
 
-    if len(ruta_relativa.parts) > 1:
-        return ruta_relativa.parts[0]
-
-    return "no_clasificado"
+else:
+    pytesseract.pytesseract.tesseract_cmd = (
+        shutil.which("tesseract") or "tesseract"
+    )
 
 
 # ==================================================
-# 3. CONVERTIR PÁGINA PDF A IMAGEN
+# 2. CONVERTIR PÁGINA PDF A IMAGEN
 # ==================================================
 
 def convertir_a_imagen(pagina):
@@ -66,11 +60,16 @@ def convertir_a_imagen(pagina):
         cv2.IMREAD_COLOR
     )
 
+    if imagen is None:
+        raise ValueError(
+            "No fue posible convertir la página PDF a imagen."
+        )
+
     return imagen
 
 
 # ==================================================
-# 4. ANALIZAR CALIDAD VISUAL
+# 3. ANALIZAR CALIDAD VISUAL
 # ==================================================
 
 def analizar_calidad(imagen):
@@ -97,7 +96,7 @@ def analizar_calidad(imagen):
 
 
 # ==================================================
-# 5. EXTRAER TEXTO DIGITAL DEL PDF
+# 4. EXTRAER TEXTO DIGITAL DEL PDF
 # ==================================================
 
 def extraer_texto_nativo(pagina):
@@ -108,7 +107,7 @@ def extraer_texto_nativo(pagina):
 
 
 # ==================================================
-# 6. EXTRAER TEXTO MEDIANTE OCR
+# 5. EXTRAER TEXTO MEDIANTE OCR
 # ==================================================
 
 def extraer_texto_ocr(imagen_gris):
@@ -133,7 +132,6 @@ def extraer_texto_ocr(imagen_gris):
     for valor in datos_ocr["conf"]:
 
         try:
-
             confianza = float(valor)
 
             if confianza >= 0:
@@ -151,15 +149,12 @@ def extraer_texto_ocr(imagen_gris):
 
 
 # ==================================================
-# 7. SELECCIONAR MÉTODO DE EXTRACCIÓN
+# 6. SELECCIONAR MÉTODO DE EXTRACCIÓN
 # ==================================================
 
 def extraer_texto(pagina, imagen_gris):
 
     texto_nativo = extraer_texto_nativo(pagina)
-
-    # Si existe suficiente texto digital,
-    # se utiliza directamente PyMuPDF.
 
     if len(texto_nativo.strip()) >= 30:
 
@@ -168,9 +163,6 @@ def extraer_texto(pagina, imagen_gris):
             None,
             "TEXTO_DIGITAL"
         )
-
-    # Si no existe texto digital utilizable,
-    # se recurre al reconocimiento OCR.
 
     texto_ocr, confianza = extraer_texto_ocr(
         imagen_gris
@@ -184,7 +176,7 @@ def extraer_texto(pagina, imagen_gris):
 
 
 # ==================================================
-# 8. CLASIFICAR LEGIBILIDAD
+# 7. CLASIFICAR LEGIBILIDAD
 # ==================================================
 
 def clasificar_legibilidad(
@@ -211,10 +203,15 @@ def clasificar_legibilidad(
         clasificacion = "PARCIALMENTE_LEGIBLE"
 
         motivos.append(
-            "Se reconoció poco texto; la extracción puede estar incompleta."
+            "Se reconoció poco texto; "
+            "la extracción puede estar incompleta."
         )
 
-    elif metodo == "OCR" and confianza is not None and confianza < 45:
+    elif (
+        metodo == "OCR"
+        and confianza is not None
+        and confianza < 45
+    ):
 
         clasificacion = "PARCIALMENTE_LEGIBLE"
 
@@ -246,40 +243,48 @@ def clasificar_legibilidad(
 
 
 # ==================================================
-# 9. PROCESAR TODAS LAS PÁGINAS DE UN PDF
+# 8. PROCESAR TODAS LAS PÁGINAS DE UN PDF
 # ==================================================
 
 def procesar_pdf(ruta_pdf):
 
+    ruta_pdf = Path(ruta_pdf)
+
+    if not ruta_pdf.exists():
+        raise FileNotFoundError(
+            f"No existe el PDF: {ruta_pdf}"
+        )
+
+    if ruta_pdf.suffix.lower() != ".pdf":
+        raise ValueError(
+            "El archivo proporcionado no es un PDF."
+        )
+
     paginas_resultado = []
 
-    with fitz.open(ruta_pdf) as documento:
+    with fitz.open(str(ruta_pdf)) as documento:
 
-        print("\nProcesando:", ruta_pdf.name)
-        print("Total de páginas:", len(documento))
+        if len(documento) == 0:
+            raise ValueError(
+                "El PDF no contiene páginas."
+            )
 
         for numero, pagina in enumerate(
             documento,
             start=1
         ):
 
-            print(f"  Analizando página {numero}...")
-
-            # Convertir página a imagen
             imagen = convertir_a_imagen(pagina)
 
-            # Analizar calidad visual
             contraste, proporcion, gris = analizar_calidad(
                 imagen
             )
 
-            # Extraer texto digital u OCR
             texto, confianza, metodo = extraer_texto(
                 pagina,
                 gris
             )
 
-            # Clasificar legibilidad
             clasificacion, motivos = clasificar_legibilidad(
                 texto,
                 confianza,
@@ -320,20 +325,23 @@ def procesar_pdf(ruta_pdf):
                 resultado_pagina
             )
 
-            print(
-                f"  Resultado: {clasificacion} | "
-                f"Método: {metodo} | "
-                f"Caracteres: {len(texto)}"
-            )
-
     return paginas_resultado
 
 
 # ==================================================
-# 10. GENERAR JSON DE CADA PDF
+# 9. CONSTRUIR JSON DEL DOCUMENTO
 # ==================================================
 
-def guardar_json(ruta_pdf, paginas):
+def construir_resultado(
+    ruta_pdf,
+    tipo_documento,
+    documento_id=None,
+    archivo_original=None
+):
+
+    ruta_pdf = Path(ruta_pdf)
+
+    paginas = procesar_pdf(ruta_pdf)
 
     resumen = {
         "LEGIBLE": 0,
@@ -357,15 +365,19 @@ def guardar_json(ruta_pdf, paginas):
 
         clasificacion_general = "LEGIBLE"
 
-    tipo_documento = obtener_tipo_documento(
-        ruta_pdf
-    )
-
     datos = {
 
-        "documento_id": ruta_pdf.stem,
+        "documento_id": (
+            str(documento_id)
+            if documento_id is not None
+            else ruta_pdf.stem
+        ),
 
-        "archivo_original": ruta_pdf.name,
+        "archivo_original": (
+            archivo_original
+            if archivo_original is not None
+            else ruta_pdf.name
+        ),
 
         "tipo_documento": tipo_documento,
 
@@ -378,146 +390,23 @@ def guardar_json(ruta_pdf, paginas):
         "paginas": paginas
     }
 
-    # Crear carpeta principal de resultados
-    CARPETA_SALIDA.mkdir(
-        parents=True,
-        exist_ok=True
+    return datos
+
+
+# ==================================================
+# 10. FUNCIÓN PRINCIPAL PARA EL BACKEND
+# ==================================================
+
+def analizar_documento(
+    ruta_pdf,
+    tipo_documento,
+    documento_id=None,
+    archivo_original=None
+):
+
+    return construir_resultado(
+        ruta_pdf=ruta_pdf,
+        tipo_documento=tipo_documento,
+        documento_id=documento_id,
+        archivo_original=archivo_original
     )
-
-    # Crear carpeta según categoría de origen
-    carpeta_tipo = CARPETA_SALIDA / tipo_documento
-
-    carpeta_tipo.mkdir(
-        parents=True,
-        exist_ok=True
-    )
-
-    ruta_json = carpeta_tipo / (
-        ruta_pdf.stem + ".json"
-    )
-
-    with open(
-        ruta_json,
-        "w",
-        encoding="utf-8"
-    ) as archivo:
-
-        json.dump(
-            datos,
-            archivo,
-            ensure_ascii=False,
-            indent=4
-        )
-
-    return datos, ruta_json
-
-
-# ==================================================
-# 11. MOSTRAR TEXTO COMPLETO
-# ==================================================
-
-def mostrar_texto_completo(datos):
-
-    print("\n========================================")
-    print("TEXTO COMPLETO EXTRAÍDO")
-    print("========================================")
-
-    for pagina in datos["paginas"]:
-
-        print(
-            f"\n========== PÁGINA "
-            f"{pagina['numero_pagina']} ==========\n"
-        )
-
-        print(pagina["texto_original"])
-
-
-# ==================================================
-# 12. PROCESAR TODOS LOS PDF
-# ==================================================
-
-def main():
-
-    if not CARPETA_DOCUMENTOS.exists():
-
-        print("ERROR: No existe la carpeta de documentos.")
-        print(CARPETA_DOCUMENTOS)
-        return
-
-    archivos_pdf = sorted(
-        archivo
-        for archivo in CARPETA_DOCUMENTOS.rglob("*")
-        if archivo.is_file()
-        and archivo.suffix.lower() == ".pdf"
-    )
-
-    if not archivos_pdf:
-
-        print("No se encontraron archivos PDF.")
-        return
-
-    print("\nPDF encontrados:", len(archivos_pdf))
-
-    exitosos = 0
-    errores = 0
-
-    for indice, ruta_pdf in enumerate(
-        archivos_pdf,
-        start=1
-    ):
-
-        print("\n----------------------------------------")
-        print(f"DOCUMENTO {indice} DE {len(archivos_pdf)}")
-        print("----------------------------------------")
-
-        try:
-
-            paginas = procesar_pdf(ruta_pdf)
-
-            datos, ruta_json = guardar_json(
-                ruta_pdf,
-                paginas
-            )
-
-            exitosos += 1
-
-            print("\nJSON generado:")
-            print(ruta_json)
-
-            print(
-                "Tipo de documento:",
-                datos["tipo_documento"]
-            )
-
-            print(
-                "Clasificación:",
-                datos["clasificacion_documento"]
-            )
-
-            mostrar_texto_completo(datos)
-
-        except Exception as error:
-
-            errores += 1
-
-            print("\nERROR AL PROCESAR:", ruta_pdf.name)
-            print(error)
-
-    print("\n========================================")
-    print("RESUMEN FINAL")
-    print("========================================")
-
-    print("PDF encontrados:", len(archivos_pdf))
-    print("Procesados correctamente:", exitosos)
-    print("Con errores:", errores)
-
-    print("\nCarpeta de resultados:")
-    print(CARPETA_SALIDA)
-
-
-# ==================================================
-# 13. EJECUTAR PROGRAMA
-# ==================================================
-
-if __name__ == "__main__":
-    main()
