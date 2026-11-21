@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import logo3b from "../img/logo1.png"; 
-
+import logo3b from "../img/logo1.png";
+import { enviarExpedienteCompleto } from "../services/api";
 
 import {
   Upload,
@@ -17,8 +17,8 @@ import {
   Check,
   ArrowLeft,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
-
 
 const DISPLAY = "font-['Bricolage_Grotesque',ui-sans-serif,system-ui,sans-serif]";
 
@@ -66,7 +66,6 @@ const formatearTamano = (bytes) =>
 const esArchivoValido = (file) =>
   EXTENSIONES_VALIDAS.some((ext) => file.name.toLowerCase().endsWith(ext));
 
-
 function Anillo({ listos, total, tam = "h-36 w-36" }) {
   const [mostrandoLogo, setMostrandoLogo] = useState(false);
   const prevListos = useRef(listos);
@@ -97,12 +96,10 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
         mostrandoLogo ? "scale-105" : "scale-100"
       } ${tam}`}
     >
-      {/* Destello sutil detrás cuando aparece el logo 3B */}
       {mostrandoLogo && (
         <span className="absolute inset-0 animate-ping rounded-full bg-[#e81c24]/25 motion-reduce:hidden" />
       )}
 
-      {/* Anillo SVG */}
       <svg viewBox="0 0 128 128" className="relative h-full w-full -rotate-90">
         <circle cx="64" cy="64" r={r} fill="none" stroke="rgba(15,23,42,0.08)" strokeWidth="10" />
         <circle
@@ -119,7 +116,6 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
         />
       </svg>
 
-      {/* Capa 1: Logo circular de Tiendas 3B ocupando el 100% del círculo */}
       <div
         className={`absolute inset-0 z-10 overflow-hidden rounded-full bg-[#e81c24] shadow-md transition-all duration-500 ${
           mostrandoLogo ? "scale-100 opacity-100" : "pointer-events-none scale-75 opacity-0"
@@ -132,7 +128,6 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
         />
       </div>
 
-      {/* Capa 2: Contador numérico (ej. 3/4 o 4/4 listos) */}
       <div
         className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${
           mostrandoLogo ? "scale-75 opacity-0" : "scale-100 opacity-100"
@@ -147,7 +142,6 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
   );
 }
 
-/* Modal de alerta con fondo transparente borroso */
 function ModalAlerta({ alerta, onCerrar }) {
   if (!alerta) return null;
 
@@ -170,7 +164,6 @@ function ModalAlerta({ alerta, onCerrar }) {
           <X className="h-5 w-5" />
         </button>
 
-        {/* Icono principal */}
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#e81c24]/15 text-[#e81c24] ring-8 ring-[#e81c24]/5">
           <AlertTriangle className="h-10 w-10" strokeWidth={2.2} />
         </div>
@@ -182,7 +175,6 @@ function ModalAlerta({ alerta, onCerrar }) {
           {alerta.mensaje}
         </p>
 
-        {/* Lista de pendientes */}
         {alerta.pendientes && alerta.pendientes.length > 0 && (
           <ul className="mt-5 w-full space-y-2 rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 text-left">
             {alerta.pendientes.map((item, idx) => (
@@ -201,7 +193,7 @@ function ModalAlerta({ alerta, onCerrar }) {
           onClick={onCerrar}
           className="mt-7 w-full cursor-pointer rounded-full bg-[#e81c24] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] transition hover:bg-[#f0262e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
         >
-          Entendido, completar datos
+          {alerta.textoBoton || "Entendido, completar datos"}
         </button>
       </div>
     </div>
@@ -213,6 +205,8 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
   const [cliente, setCliente] = useState("");
   const [archivos, setArchivos] = useState(ARCHIVOS_VACIOS);
   const [enviado, setEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [pasoEnvio, setPasoEnvio] = useState("Enviando documentos...");
   const [arrastrando, setArrastrando] = useState(null);
   const [recienCargado, setRecienCargado] = useState(null);
   const [errores, setErrores] = useState({});
@@ -246,10 +240,10 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
   const total = DOCUMENTOS_REQUERIDOS.length;
   const todosSubidos = inmueble.trim() !== "" && cliente.trim() !== "" && listos === total;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (enviando) return;
 
-    // Revisar qué falta exactamente antes de enviar
     const pendientes = [];
     if (inmueble.trim() === "") {
       pendientes.push("Escribir el nombre o dirección del inmueble");
@@ -273,37 +267,39 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
       return;
     }
 
-    const nuevoExpediente = {
-      id: `EXP-2026-00${Math.floor(Math.random() * 90 + 10)}`,
-      inmueble,
-      cliente,
-      fechaSubida: new Date().toLocaleString("es-MX", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      progreso: 15,
-      etapaActual: "Agente Clasificador recibiendo documentos...",
-      recomendacion: "En proceso",
-      resumenEjecutivo:
-        "Expediente recién ingresado. Los agentes están extrayendo texto y validando reglas.",
-      validacionCruzada: [],
-      documentos: DOCUMENTOS_REQUERIDOS.map((doc) => ({
-        tipo: doc.titulo.replace(/^\d+\.\s/, ""),
-        nombreArchivo: archivos[doc.id]?.name || "documento.pdf",
-        estatus: "Analizando",
-        hallazgos: [],
-      })),
-    };
+    setEnviando(true);
+    setPasoEnvio("Conectando con el servidor...");
 
-    onEnviarExpediente(nuevoExpediente);
-    setEnviado(true);
+    try {
+      const expedienteProcesado = await enviarExpedienteCompleto({
+        inmueble,
+        cliente,
+        archivos,
+        onProgreso: (_pct, mensaje) => setPasoEnvio(mensaje),
+      });
+
+      onEnviarExpediente(expedienteProcesado);
+      setEnviando(false);
+      setEnviado(true);
+    } catch (err) {
+      setEnviando(false);
+      setAlertaModal({
+        titulo: "No se pudo completar el envío",
+        mensaje:
+          err.message ||
+          "Hubo un problema al comunicarse con el servidor. Verifica que el backend esté encendido.",
+        pendientes: [
+          "Revisa que el servidor FastAPI esté corriendo en el puerto 8000",
+          "Verifica que los archivos no estén dañados o vacíos",
+        ],
+        textoBoton: "Entendido",
+      });
+    }
   };
 
   const reiniciar = () => {
     setEnviado(false);
+    setEnviando(false);
     setInmueble("");
     setCliente("");
     setArchivos(ARCHIVOS_VACIOS);
@@ -319,8 +315,8 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
           <Anillo listos={total} total={total} tam="h-32 w-32" />
           <h2 className={`${DISPLAY} mt-6 text-2xl font-bold sm:text-3xl`}>Todo en camino</h2>
           <p className="mt-2 max-w-sm text-sm leading-relaxed text-slate-600">
-            Los 4 documentos de <strong className="text-slate-900">{inmueble}</strong> ya los está
-            revisando nuestro equipo de 3B.
+            Los 4 documentos de <strong className="text-slate-900">{inmueble}</strong> ya fueron
+            procesados por nuestro sistema de 3B.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             {onVolver && (
@@ -348,25 +344,23 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
   /* ---------- Formulario ---------- */
   return (
     <div className="relative z-10 mx-auto max-w-4xl space-y-5 px-4 py-8 text-slate-900 sm:px-6 sm:py-10">
-      {/* Modal flotante de alertas */}
       <ModalAlerta alerta={alertaModal} onCerrar={() => setAlertaModal(null)} />
 
       {onVolver && (
         <button
           type="button"
           onClick={onVolver}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#e81c24] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] transition hover:bg-[#f0262e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
+          disabled={enviando}
+          className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#e81c24] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] transition hover:bg-[#f0262e] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
         >
-          <ArrowLeft className="h-4 w-4" /> Volver 
+          <ArrowLeft className="h-4 w-4" /> Volver
         </button>
       )}
 
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         {/* Datos del predio */}
         <div className={`${PANEL} p-6 sm:p-8`}>
-          <h2
-            className={`${DISPLAY} text-3xl font-bold leading-tight sm:text-4xl`}
-          >
+          <h2 className={`${DISPLAY} text-3xl font-bold leading-tight sm:text-4xl`}>
             Registra un nuevo predio o local
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-500">
@@ -381,9 +375,7 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
               >
                 <span>Nombre o dirección del inmueble</span>
                 {inmueble.trim() === "" && (
-                  <span className="text-xs font-medium text-[#e81c24]">
-                    * Obligatorio
-                  </span>
+                  <span className="text-xs font-medium text-[#e81c24]">* Obligatorio</span>
                 )}
               </label>
               <div className="relative">
@@ -391,6 +383,7 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                 <input
                   id="inmueble"
                   type="text"
+                  disabled={enviando}
                   placeholder="Ej. Local Av. Insurgentes Sur #1240"
                   value={inmueble}
                   onChange={(e) => setInmueble(e.target.value)}
@@ -405,9 +398,7 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
               >
                 <span>Propietario o corredor que envía</span>
                 {cliente.trim() === "" && (
-                  <span className="text-xs font-medium text-[#e81c24]">
-                    * Obligatorio
-                  </span>
+                  <span className="text-xs font-medium text-[#e81c24]">* Obligatorio</span>
                 )}
               </label>
               <div className="relative">
@@ -415,6 +406,7 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                 <input
                   id="cliente"
                   type="text"
+                  disabled={enviando}
                   placeholder="Ej. Grupo Inmobiliario del Valle S.A."
                   value={cliente}
                   onChange={(e) => setCliente(e.target.value)}
@@ -425,7 +417,7 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
           </div>
         </div>
 
-        {/* Progreso y envío (Debajo de Registrar) */}
+        {/* Progreso y envío */}
         <div
           className={`${PANEL} flex flex-col items-center justify-between gap-6 p-6 sm:p-8 md:flex-row`}
         >
@@ -439,22 +431,15 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                 {DOCUMENTOS_REQUERIDOS.map((doc) => {
                   const ok = Boolean(archivos[doc.id]);
                   return (
-                    <li
-                      key={doc.id}
-                      className="flex items-center gap-2.5 text-sm"
-                    >
+                    <li key={doc.id} className="flex items-center gap-2.5 text-sm">
                       <span
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${
-                          ok
-                            ? "bg-emerald-500 text-white"
-                            : "border border-slate-300"
+                          ok ? "bg-emerald-500 text-white" : "border border-slate-300"
                         }`}
                       >
                         {ok && <Check className="h-3 w-3" strokeWidth={3} />}
                       </span>
-                      <span
-                        className={`truncate ${ok ? "text-slate-900" : "text-slate-500"}`}
-                      >
+                      <span className={`truncate ${ok ? "text-slate-900" : "text-slate-500"}`}>
                         {doc.titulo}
                       </span>
                     </li>
@@ -467,19 +452,31 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
           <div className="w-full md:w-auto md:max-w-xs">
             <button
               type="submit"
-              className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24] ${
-                todosSubidos
+              disabled={enviando}
+              className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition-all duration-300 disabled:cursor-wait focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24] ${
+                todosSubidos || enviando
                   ? "bg-[#e81c24] text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] hover:bg-[#f0262e]"
                   : "bg-slate-900/[0.06] text-slate-500 hover:bg-slate-900/[0.11] hover:text-slate-700"
               }`}
             >
-              <Send className="h-4 w-4" />
-              Enviar documentación
+              {enviando ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="truncate">{pasoEnvio}</span>
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Enviar documentación
+                </>
+              )}
             </button>
             <p className="mt-2.5 text-center text-xs text-slate-500">
-              {todosSubidos
-                ? "¡Todo listo! Ya puedes enviar tus documentos."
-                : "Los 4 documentos son obligatorios para que nuestro equipo revise que todos tus papeles coincidan."}
+              {enviando
+                ? "Por favor no cierres esta ventana mientras procesamos los archivos..."
+                : todosSubidos
+                  ? "¡Todo listo! Ya puedes enviar tus documentos."
+                  : "Los 4 documentos son obligatorios para que nuestro equipo revise que todos tus papeles coincidan."}
             </p>
           </div>
         </div>
@@ -498,20 +495,19 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                 key={doc.id}
                 onDragOver={(e) => {
                   e.preventDefault();
-                  if (arrastrando !== doc.id) setArrastrando(doc.id);
+                  if (!enviando && arrastrando !== doc.id) setArrastrando(doc.id);
                 }}
                 onDragEnter={(e) => {
                   e.preventDefault();
-                  setArrastrando(doc.id);
+                  if (!enviando) setArrastrando(doc.id);
                 }}
                 onDragLeave={(e) => {
-                  if (!e.currentTarget.contains(e.relatedTarget))
-                    setArrastrando(null);
+                  if (!e.currentTarget.contains(e.relatedTarget)) setArrastrando(null);
                 }}
                 onDrop={(e) => {
                   e.preventDefault();
                   setArrastrando(null);
-                  handleArchivoChange(doc.id, e.dataTransfer.files?.[0]);
+                  if (!enviando) handleArchivoChange(doc.id, e.dataTransfer.files?.[0]);
                 }}
                 className={`${PANEL_BASE} p-5 transition duration-300 motion-reduce:transition-none ${
                   activa
@@ -542,16 +538,13 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                       </div>
                     </div>
                     <div className="min-w-0">
-                      <h3 className={`${DISPLAY} text-base font-bold`}>
-                        {doc.titulo}
-                      </h3>
+                      <h3 className={`${DISPLAY} text-base font-bold`}>{doc.titulo}</h3>
                       <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
                         {doc.descripcion}
                       </p>
                     </div>
                   </div>
 
-                  {/* Etiqueta de estado por documento */}
                   <span
                     className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                       archivo
@@ -577,9 +570,10 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                       </div>
                       <button
                         type="button"
+                        disabled={enviando}
                         onClick={() => quitarArchivo(doc.id)}
                         aria-label={`Quitar ${doc.titulo}`}
-                        className="cursor-pointer rounded-full p-1.5 text-slate-500 transition hover:bg-slate-900/[0.06] hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-[#e81c24]"
+                        className="cursor-pointer rounded-full p-1.5 text-slate-500 transition hover:bg-slate-900/[0.06] hover:text-slate-900 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[#e81c24]"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -596,21 +590,16 @@ export default function PortalCliente({ onEnviarExpediente, onVolver }) {
                         className={`h-5 w-5 transition-transform ${activa ? "-translate-y-1" : ""}`}
                       />
                       <span className="text-sm font-medium">
-                        {activa
-                          ? "Suéltalo aquí"
-                          : "Arrastra tu archivo o haz clic"}
+                        {activa ? "Suéltalo aquí" : "Arrastra tu archivo o haz clic"}
                       </span>
-                      <span className="text-xs text-slate-500">
-                        PDF, PNG o JPG
-                      </span>
+                      <span className="text-xs text-slate-500">PDF, PNG o JPG</span>
                       <input
                         ref={(el) => (inputsRef.current[doc.id] = el)}
                         type="file"
+                        disabled={enviando}
                         accept=".pdf,.png,.jpg,.jpeg"
                         className="sr-only"
-                        onChange={(e) =>
-                          handleArchivoChange(doc.id, e.target.files[0])
-                        }
+                        onChange={(e) => handleArchivoChange(doc.id, e.target.files[0])}
                       />
                     </label>
                   )}
