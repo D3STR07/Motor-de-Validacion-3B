@@ -20,6 +20,7 @@ import {
   GitCompare,
   Gavel,
   Check,
+  Calendar,
 } from "lucide-react";
 
 const DISPLAY =
@@ -63,6 +64,37 @@ const FILTROS = [
   { id: "analisis", label: "En análisis" },
 ];
 
+const FILTROS_FECHA_RAPIDOS = [
+  { id: "todos", label: "Todos" },
+  { id: "hoy", label: "Hoy" },
+  { id: "7dias", label: "Últimos 7 días" },
+  { id: "mes", label: "Este mes" },
+];
+
+const obtenerFechaExpediente = (exp) => {
+  if (exp.creadoEn) {
+    const d = new Date(exp.creadoEn);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  if (exp.fechaSubida) {
+    const soloFecha = exp.fechaSubida.split(",")[0].trim();
+    const partes = soloFecha.split("/");
+    if (partes.length === 3) {
+      const [dia, mes, anio] = partes.map(Number);
+      if (!Number.isNaN(dia) && !Number.isNaN(mes) && !Number.isNaN(anio)) {
+        return new Date(anio, mes - 1, dia);
+      }
+    }
+  }
+  return null;
+};
+
+const parsearInputFecha = (str) => {
+  if (!str) return null;
+  const [anio, mes, dia] = str.split("-").map(Number);
+  return new Date(anio, mes - 1, dia);
+};
+
 const AGENTES = [
   {
     id: "clasificador",
@@ -105,7 +137,6 @@ const normalizar = (v) => {
   return s.replace(/[^a-z0-9]/g, "");
 };
 
-// Devuelve las columnas cuyo valor se aparta del consenso de la fila
 const celdasDiscrepantes = (fila) => {
   if (fila.estado === "coincide") return [];
   const valores = CAMPOS_MATRIZ.map((campo) => ({
@@ -121,7 +152,6 @@ const celdasDiscrepantes = (fila) => {
     (k) => frecuencia[k] === max,
   );
 
-  // En empate, las escrituras mandan como fuente de verdad
   const normEscrituras = normalizar(fila.escrituras);
   const referencia = candidatos.includes(normEscrituras)
     ? normEscrituras
@@ -176,7 +206,6 @@ function BarraProgreso({ exp }) {
         </span>
       </div>
 
-      {/* 4 segmentos representando a los 4 agentes */}
       <div className="grid grid-cols-4 gap-1.5">
         {[0, 1, 2, 3].map((paso) => {
           const umbralInicio = paso * 25;
@@ -426,7 +455,6 @@ function ModalEvidencia({ doc, onClose }) {
         </div>
 
         <div className="grid flex-1 grid-cols-1 overflow-y-auto md:grid-cols-5 md:overflow-hidden">
-          {/* Representación del documento */}
           <div className="bg-slate-900/[0.04] p-4 md:col-span-3 md:overflow-y-auto md:p-6">
             <div className="mx-auto max-w-md space-y-3 rounded-lg bg-[#fffdfb] p-6 shadow-lg">
               <div className="h-3 w-2/5 rounded bg-[#15100f]/20" />
@@ -456,7 +484,6 @@ function ModalEvidencia({ doc, onClose }) {
             </p>
           </div>
 
-          {/* Evidencia extraída */}
           <div className="border-t border-slate-900/[0.07] p-5 md:col-span-2 md:overflow-y-auto md:border-l md:border-t-0">
             <h4 className="mb-4 flex items-center gap-2 text-sm font-semibold">
               <ListChecks className="h-4 w-4 text-slate-500" />
@@ -507,8 +534,38 @@ export default function BandejaAdmin({ expedientes }) {
   const [seleccionado, setSeleccionado] = useState(null);
   const [filtro, setFiltro] = useState("todos");
   const [busqueda, setBusqueda] = useState("");
+  const [filtroFechaRapido, setFiltroFechaRapido] = useState("todos");
+  const [fechaDesde, setFechaDesde] = useState("");
+  const [fechaHasta, setFechaHasta] = useState("");
   const [docVista, setDocVista] = useState(null);
   const cerrarVista = useCallback(() => setDocVista(null), []);
+
+  const hayFiltroFechaActivo =
+    filtroFechaRapido !== "todos" || fechaDesde !== "" || fechaHasta !== "";
+
+  const limpiarFechas = () => {
+    setFiltroFechaRapido("todos");
+    setFechaDesde("");
+    setFechaHasta("");
+  };
+
+  const handleSeleccionFechaRapida = (id) => {
+    setFiltroFechaRapido(id);
+    setFechaDesde("");
+    setFechaHasta("");
+  };
+
+  const handleCambioRango = (tipo, valor) => {
+    setFiltroFechaRapido("rango");
+    if (tipo === "desde") setFechaDesde(valor);
+    if (tipo === "hasta") setFechaHasta(valor);
+    if (
+      (tipo === "desde" && valor === "" && fechaHasta === "") ||
+      (tipo === "hasta" && valor === "" && fechaDesde === "")
+    ) {
+      setFiltroFechaRapido("todos");
+    }
+  };
 
   const conteos = useMemo(() => {
     const c = {
@@ -523,6 +580,9 @@ export default function BandejaAdmin({ expedientes }) {
 
   const filtrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
+    const hoy = new Date();
+    const inicioHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+
     return expedientes.filter((e) => {
       const okFiltro = filtro === "todos" || getEstado(e) === filtro;
       const okBusqueda =
@@ -530,9 +590,44 @@ export default function BandejaAdmin({ expedientes }) {
         [e.id, e.inmueble, e.cliente].some((x) =>
           String(x).toLowerCase().includes(q),
         );
-      return okFiltro && okBusqueda;
+
+      if (!okFiltro || !okBusqueda) return false;
+
+      // Filtro por fechas
+      const fechaExp = obtenerFechaExpediente(e);
+      if (!fechaExp) return true;
+
+      if (filtroFechaRapido === "hoy") {
+        return fechaExp.getTime() === inicioHoy.getTime();
+      }
+      if (filtroFechaRapido === "7dias") {
+        const hace7Dias = new Date(inicioHoy);
+        hace7Dias.setDate(inicioHoy.getDate() - 7);
+        return fechaExp >= hace7Dias && fechaExp <= inicioHoy;
+      }
+      if (filtroFechaRapido === "mes") {
+        return (
+          fechaExp.getMonth() === inicioHoy.getMonth() &&
+          fechaExp.getFullYear() === inicioHoy.getFullYear()
+        );
+      }
+      if (fechaDesde || fechaHasta) {
+        const dDesde = parsearInputFecha(fechaDesde);
+        const dHasta = parsearInputFecha(fechaHasta);
+        if (dDesde && fechaExp < dDesde) return false;
+        if (dHasta && fechaExp > dHasta) return false;
+      }
+
+      return true;
     });
-  }, [expedientes, filtro, busqueda]);
+  }, [
+    expedientes,
+    filtro,
+    busqueda,
+    filtroFechaRapido,
+    fechaDesde,
+    fechaHasta,
+  ]);
 
   /* ---------- Vista detalle ---------- */
   if (seleccionado) {
@@ -543,7 +638,7 @@ export default function BandejaAdmin({ expedientes }) {
     const correctos = matriz.length - discrepancias;
 
     return (
-      <div className="relative z-10 mx-auto max-w-7xl space-y-5 px-4 py-6 text-slate-900 sm:px-6 sm:py-8">
+      <div className="relative z-10 mx-auto max-w-5xl space-y-5 px-4 py-6 text-slate-900 sm:px-6 sm:py-8">
         <button
           type="button"
           onClick={() => setSeleccionado(null)}
@@ -775,7 +870,7 @@ export default function BandejaAdmin({ expedientes }) {
 
   /* ---------- Vista bandeja ---------- */
   return (
-    <div className="relative z-10 mx-auto max-w-7xl px-4 py-6 text-slate-900 sm:px-6 sm:py-8">
+    <div className="relative z-10 mx-auto max-w-5xl px-4 py-6 text-slate-900 sm:px-6 sm:py-8">
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h2
@@ -836,7 +931,82 @@ export default function BandejaAdmin({ expedientes }) {
         />
       </div>
 
-      {/* Filtros */}
+      {/* Buscador por fechas / días / rangos */}
+      <div className={`${PANEL} mb-5 p-4 sm:p-5`}>
+        <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+          <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+            <Calendar className="h-4 w-4 text-[#e81c24]" />
+            <span>Filtrar por fecha de subida</span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {FILTROS_FECHA_RAPIDOS.map((item) => {
+              const activo = filtroFechaRapido === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleSeleccionFechaRapida(item.id)}
+                  className={`cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                    activo
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "border border-slate-200 bg-white/80 text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-3.5 flex flex-col gap-3 border-t border-slate-900/[0.06] pt-3.5 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <label
+              htmlFor="admin-fecha-desde"
+              className="mb-1 block text-xs font-medium text-slate-600"
+            >
+              Desde el día
+            </label>
+            <input
+              id="admin-fecha-desde"
+              type="date"
+              value={fechaDesde}
+              onChange={(e) => handleCambioRango("desde", e.target.value)}
+              className="w-full cursor-pointer rounded-2xl border border-slate-200 bg-white/90 px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-[#e81c24]/70 focus:ring-4 focus:ring-[#e81c24]/15"
+            />
+          </div>
+
+          <div className="flex-1">
+            <label
+              htmlFor="admin-fecha-hasta"
+              className="mb-1 block text-xs font-medium text-slate-600"
+            >
+              Hasta el día
+            </label>
+            <input
+              id="admin-fecha-hasta"
+              type="date"
+              value={fechaHasta}
+              min={fechaDesde || undefined}
+              onChange={(e) => handleCambioRango("hasta", e.target.value)}
+              className="w-full cursor-pointer rounded-2xl border border-slate-200 bg-white/90 px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-[#e81c24]/70 focus:ring-4 focus:ring-[#e81c24]/15"
+            />
+          </div>
+
+          {hayFiltroFechaActivo && (
+            <button
+              type="button"
+              onClick={limpiarFechas}
+              className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+            >
+              <X className="h-3.5 w-3.5" /> Limpiar fechas
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Filtros por estado */}
       <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1">
         {FILTROS.map((f) => {
           const activo = filtro === f.id;
@@ -871,17 +1041,18 @@ export default function BandejaAdmin({ expedientes }) {
             No hay expedientes con ese criterio
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Prueba con otro filtro o borra la búsqueda.
+            Prueba con otro filtro, rango de fechas o borra la búsqueda.
           </p>
-          {(filtro !== "todos" || busqueda) && (
+          {(filtro !== "todos" || busqueda || hayFiltroFechaActivo) && (
             <button
               onClick={() => {
                 setFiltro("todos");
                 setBusqueda("");
+                limpiarFechas();
               }}
               className="mt-4 cursor-pointer rounded-full bg-[#e81c24] px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
-              Limpiar filtros
+              Limpiar todos los filtros
             </button>
           )}
         </div>
