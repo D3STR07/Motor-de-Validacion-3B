@@ -66,17 +66,17 @@ const formatearTamano = (bytes) =>
 const esArchivoValido = (file) =>
   EXTENSIONES_VALIDAS.some((ext) => file.name.toLowerCase().endsWith(ext));
 
+
 function Anillo({ listos, total, tam = "h-36 w-36" }) {
   const [mostrandoLogo, setMostrandoLogo] = useState(false);
   const prevListos = useRef(listos);
 
   useEffect(() => {
-    // Dispara la animación solo cuando acaba de llegar al 100% (de 3/4 a 4/4)
     if (listos === total && prevListos.current < total) {
       setMostrandoLogo(true);
       const timer = setTimeout(() => {
         setMostrandoLogo(false);
-      }, 2200); // Dura 2.2 segundos mostrando el logo 3B antes de pasar a verde
+      }, 2200);
       prevListos.current = listos;
       return () => clearTimeout(timer);
     }
@@ -99,7 +99,7 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
     >
       {/* Destello sutil detrás cuando aparece el logo 3B */}
       {mostrandoLogo && (
-        <span className="absolute inset-2 animate-ping rounded-full bg-[#e81c24]/25 motion-reduce:hidden" />
+        <span className="absolute inset-0 animate-ping rounded-full bg-[#e81c24]/25 motion-reduce:hidden" />
       )}
 
       {/* Anillo SVG */}
@@ -119,16 +119,16 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
         />
       </svg>
 
-      {/* Capa 1: Logo circular de Tiendas 3B (visible los primeros 2.2s al completar) */}
+      {/* Capa 1: Logo circular de Tiendas 3B ocupando el 100% del círculo */}
       <div
-        className={`absolute inset-0 flex items-center justify-center p-4 transition-all duration-500 ${
+        className={`absolute inset-0 z-10 overflow-hidden rounded-full bg-[#e81c24] shadow-md transition-all duration-500 ${
           mostrandoLogo ? "scale-100 opacity-100" : "pointer-events-none scale-75 opacity-0"
         }`}
       >
         <img
           src={logo3b}
           alt="Logo Tiendas 3B"
-          className="h-full w-full rounded-full object-contain shadow-md"
+          className="h-full w-full scale-105 object-cover"
         />
       </div>
 
