@@ -1,0 +1,30 @@
+{
+    "documento_id": "1. Predial 2025 Tepeji 5",
+    "archivo_original": "1. Predial 2025 Tepeji 5.pdf",
+    "tipo_documento": "predial",
+    "clasificacion_documento": "LEGIBLE",
+    "total_paginas": 1,
+    "resumen_legibilidad": {
+        "LEGIBLE": 1,
+        "PARCIALMENTE LEGIBLE": 0,
+        "ILEGIBLE": 0
+    },
+    "paginas": [
+        {
+            "clasificacion": "LEGIBLE",
+            "caracteres_extraidos": 0,
+            "metricas_visuales": {
+                "nivel_enfoque": 1177.51,
+                "contraste": 43.44,
+                "proporcion_tinta": 0.0676,
+                "cobertura_visual": 0.94
+            },
+            "motivos": [
+                "La imagen presenta una nitidez aparentemente adecuada.",
+                "No se extrajo texto digital. Se requiere OCR para evaluar el reconocimiento."
+            ],
+            "texto_original": "",
+            "numero_pagina": 1
+        }
+    ]
+}

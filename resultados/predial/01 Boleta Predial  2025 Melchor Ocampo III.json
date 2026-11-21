@@ -1,0 +1,30 @@
+{
+    "documento_id": "01 Boleta Predial  2025 Melchor Ocampo III",
+    "archivo_original": "01 Boleta Predial  2025 Melchor Ocampo III.pdf",
+    "tipo_documento": "predial",
+    "clasificacion_documento": "LEGIBLE",
+    "total_paginas": 1,
+    "resumen_legibilidad": {
+        "LEGIBLE": 1,
+        "PARCIALMENTE LEGIBLE": 0,
+        "ILEGIBLE": 0
+    },
+    "paginas": [
+        {
+            "clasificacion": "LEGIBLE",
+            "caracteres_extraidos": 0,
+            "metricas_visuales": {
+                "nivel_enfoque": 4012.51,
+                "contraste": 55.76,
+                "proporcion_tinta": 0.1426,
+                "cobertura_visual": 1.0
+            },
+            "motivos": [
+                "La imagen presenta una nitidez aparentemente adecuada.",
+                "No se extrajo texto digital. Se requiere OCR para evaluar el reconocimiento."
+            ],
+            "texto_original": "",
+            "numero_pagina": 1
+        }
+    ]
+}

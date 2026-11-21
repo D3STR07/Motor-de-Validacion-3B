@@ -1,0 +1,31 @@
+{
+    "documento_id": "02 Predial",
+    "archivo_original": "02 Predial.pdf",
+    "tipo_documento": "predial",
+    "clasificacion_documento": "LEGIBLE",
+    "total_paginas": 1,
+    "resumen_legibilidad": {
+        "LEGIBLE": 1,
+        "PARCIALMENTE LEGIBLE": 0,
+        "ILEGIBLE": 0
+    },
+    "paginas": [
+        {
+            "clasificacion": "LEGIBLE",
+            "caracteres_extraidos": 0,
+            "metricas_visuales": {
+                "nivel_enfoque": 726.73,
+                "contraste": 28.88,
+                "proporcion_tinta": 0.0397,
+                "cobertura_visual": 1.0
+            },
+            "motivos": [
+                "La imagen presenta una nitidez aparentemente adecuada.",
+                "Advertencia: contraste moderado.",
+                "No se extrajo texto digital. Se requiere OCR para evaluar el reconocimiento."
+            ],
+            "texto_original": "",
+            "numero_pagina": 1
+        }
+    ]
+}

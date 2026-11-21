@@ -1,0 +1,30 @@
+{
+    "documento_id": "2024 - Comprobante Predial Toscana",
+    "archivo_original": "2024 - Comprobante Predial Toscana.pdf",
+    "tipo_documento": "predial",
+    "clasificacion_documento": "LEGIBLE",
+    "total_paginas": 1,
+    "resumen_legibilidad": {
+        "LEGIBLE": 1,
+        "PARCIALMENTE LEGIBLE": 0,
+        "ILEGIBLE": 0
+    },
+    "paginas": [
+        {
+            "clasificacion": "LEGIBLE",
+            "caracteres_extraidos": 0,
+            "metricas_visuales": {
+                "nivel_enfoque": 7339.45,
+                "contraste": 71.39,
+                "proporcion_tinta": 0.1819,
+                "cobertura_visual": 1.0
+            },
+            "motivos": [
+                "La imagen presenta una nitidez aparentemente adecuada.",
+                "No se extrajo texto digital. Se requiere OCR para evaluar el reconocimiento."
+            ],
+            "texto_original": "",
+            "numero_pagina": 1
+        }
+    ]
+}

@@ -1,0 +1,29 @@
+{
+    "documento_id": "PREDIAL 2024-TULTEPEC INSURGENTES",
+    "archivo_original": "PREDIAL 2024-TULTEPEC INSURGENTES.pdf",
+    "tipo_documento": "predial",
+    "clasificacion_documento": "LEGIBLE",
+    "total_paginas": 1,
+    "resumen_legibilidad": {
+        "LEGIBLE": 1,
+        "PARCIALMENTE LEGIBLE": 0,
+        "ILEGIBLE": 0
+    },
+    "paginas": [
+        {
+            "clasificacion": "LEGIBLE",
+            "caracteres_extraidos": 2124,
+            "metricas_visuales": {
+                "nivel_enfoque": 1895.18,
+                "contraste": 65.59,
+                "proporcion_tinta": 0.1492,
+                "cobertura_visual": 0.75
+            },
+            "motivos": [
+                "La imagen presenta una nitidez aparentemente adecuada."
+            ],
+            "texto_original": "GOBIERNO MUNICIPAL 2022-2024    RECIBO OFICIAL DE PAGO\n\nMUNICIPIO DE TULTEPEC\nPlaza Hidalgo 1,Centro Tultepec, Estadode México. C.P.\n54960\nSerie: TA  Folio: 013228                           Una historia nueva...\nFecha y hora:25/01/2024 16:02:09              Hoja 1  de 1       Ttepec\n                                    CONTRIBUYENTE\n                      PERALTASANCHEZ ALEJANDROROQUE\n\n              LIQUIDACIÓN                       DATOS DEL PAGO\n IMPUESTO PREDIAL ENE-DIC 2024                                Clave:0070151126000000\n  Importe: 2,424.99 Subsidio Importe: 193.99                                   Ubicación  del predio:GLADIOLASE INSURGENTES  S/NCOL\n  SubTotal *** 2,231.00                                    SANTA RITA\n TOTAL *** $ 2,231.00 ***                                               Valor catastral:1,262,995.00\n  Forma de pago:Débito                                        Año del avalúo:2024\n                                                                          Superficie terreno propio:573.00\n                                                                          Superficie construcción propia:98.00\n                                                                     Subsidio aplicado:PAGO ANUAL ANTICIPADO\n         UltescUna histo1aGOBIEPI.r MNCIDALnueva...2022-2024                                                   Escanea y Factura\n                   25 ENE 2024                                    tu recibo en línea.\n            TESORERIA MUNICIPAL                     CAJACENTRAL\n\n\n\n\n                                             Información Adicional\n   ESTE D0cUMENTO ES UN COMPROBANTE DE PAGO, PARA OBTENER sU FACTURA ELECTRÓNICA (CFDI) DEBE ESCANEAR EL CÓDIGO QR O sOLICITELA EN LAS OFICINAS\n    RECAUDADORAS.\n    1- LA REPRODUCCIÓN NO AUTORIZADA DE ESTE FORMATO CONSTITUYE UN DELITO EN LOS TÉRMINOs DE LAS DISPOSICIONES JUR0DICAS Y MERCANTILES Y SU USO ES\n   RESPONSABILIDAD EXCLCLUSIVA DE LA PERSONA ANOMBRE DE QUIEN SE ENCUENTRE  EMITIDO.\n    2- EL PRESENTE RECIBO NO LE DADERECHO DE EXIGIR SE OTORGUE EL SERVICIO o TRÁMITE SI NO CUMPLE CON LOs REQUISITOS PARA ESTE MISMO.",
+            "numero_pagina": 1
+        }
+    ]
+}

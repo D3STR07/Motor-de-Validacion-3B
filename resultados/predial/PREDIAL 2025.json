@@ -1,0 +1,78 @@
+{
+    "documento_id": "PREDIAL 2025",
+    "archivo_original": "PREDIAL 2025.pdf",
+    "tipo_documento": "predial",
+    "clasificacion_documento": "LEGIBLE",
+    "total_paginas": 4,
+    "resumen_legibilidad": {
+        "LEGIBLE": 4,
+        "PARCIALMENTE LEGIBLE": 0,
+        "ILEGIBLE": 0
+    },
+    "paginas": [
+        {
+            "clasificacion": "LEGIBLE",
+            "caracteres_extraidos": 0,
+            "metricas_visuales": {
+                "nivel_enfoque": 2573.33,
+                "contraste": 67.42,
+                "proporcion_tinta": 0.1226,
+                "cobertura_visual": 1.0
+            },
+            "motivos": [
+                "La imagen presenta una nitidez aparentemente adecuada.",
+                "No se extrajo texto digital. Se requiere OCR para evaluar el reconocimiento."
+            ],
+            "texto_original": "",
+            "numero_pagina": 1
+        },
+        {
+            "clasificacion": "LEGIBLE",
+            "caracteres_extraidos": 0,
+            "metricas_visuales": {
+                "nivel_enfoque": 5127.02,
+                "contraste": 62.97,
+                "proporcion_tinta": 0.135,
+                "cobertura_visual": 1.0
+            },
+            "motivos": [
+                "La imagen presenta una nitidez aparentemente adecuada.",
+                "No se extrajo texto digital. Se requiere OCR para evaluar el reconocimiento."
+            ],
+            "texto_original": "",
+            "numero_pagina": 2
+        },
+        {
+            "clasificacion": "LEGIBLE",
+            "caracteres_extraidos": 0,
+            "metricas_visuales": {
+                "nivel_enfoque": 5093.79,
+                "contraste": 58.23,
+                "proporcion_tinta": 0.111,
+                "cobertura_visual": 1.0
+            },
+            "motivos": [
+                "La imagen presenta una nitidez aparentemente adecuada.",
+                "No se extrajo texto digital. Se requiere OCR para evaluar el reconocimiento."
+            ],
+            "texto_original": "",
+            "numero_pagina": 3
+        },
+        {
+            "clasificacion": "LEGIBLE",
+            "caracteres_extraidos": 0,
+            "metricas_visuales": {
+                "nivel_enfoque": 3550.76,
+                "contraste": 50.77,
+                "proporcion_tinta": 0.0896,
+                "cobertura_visual": 0.88
+            },
+            "motivos": [
+                "La imagen presenta una nitidez aparentemente adecuada.",
+                "No se extrajo texto digital. Se requiere OCR para evaluar el reconocimiento."
+            ],
+            "texto_original": "",
+            "numero_pagina": 4
+        }
+    ]
+}
