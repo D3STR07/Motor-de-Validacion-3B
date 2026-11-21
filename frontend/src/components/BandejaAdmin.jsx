@@ -626,14 +626,14 @@ export default function BandejaAdmin({ expedientes }) {
 
             <div className="overflow-x-auto">
               <table className="w-full min-w-[780px] text-left text-sm">
-                <thead className="text-xs text-slate-500">
+                <thead className="bg-slate-900/[0.03] text-sm font-bold text-slate-800">
                   <tr>
-                    <th className="px-5 py-3 font-medium">Campo evaluado</th>
-                    <th className="px-4 py-3 font-medium">Escrituras</th>
-                    <th className="px-4 py-3 font-medium">Predial</th>
-                    <th className="px-4 py-3 font-medium">Alineamiento</th>
-                    <th className="px-4 py-3 font-medium">Uso de suelo</th>
-                    <th className="px-4 py-3 font-medium">Estado</th>
+                    <th className="px-5 py-3.5 font-bold">Campo evaluado</th>
+                    <th className="px-4 py-3.5 font-bold">Escrituras</th>
+                    <th className="px-4 py-3.5 font-bold">Predial</th>
+                    <th className="px-4 py-3.5 font-bold">Alineamiento</th>
+                    <th className="px-4 py-3.5 font-bold">Uso de suelo</th>
+                    <th className="px-4 py-3.5 font-bold">Estado</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-900/[0.07]">
@@ -680,57 +680,92 @@ export default function BandejaAdmin({ expedientes }) {
 
         {/* Documentos y evidencias */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {exp.documentos.map((doc, idx) => (
-            <div key={idx} className={`${PANEL} p-5`}>
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#e81c24]/20 text-[#e81c24]">
-                    <FileText className="h-5 w-5" />
-                  </span>
-                  <h4 className={`${DISPLAY} truncate text-base font-bold`}>
-                    {doc.tipo}
-                  </h4>
-                </div>
-                <span className="shrink-0 rounded-full bg-slate-900/[0.06] px-3 py-1 text-xs font-medium text-slate-700">
-                  {doc.estatus}
-                </span>
-              </div>
+          {exp.documentos.map((doc, idx) => {
+            const tieneDiscrepancia =
+              /inconsistencia|condicionante|rechaz/i.test(doc.estatus);
 
-              <div className="mb-4 flex items-center justify-between gap-2 rounded-2xl bg-slate-900/[0.04] px-3.5 py-2.5 text-xs">
-                <span className="truncate text-slate-500">
-                  {doc.nombreArchivo}
-                </span>
-                <button
-                  onClick={() => setDocVista(doc)}
-                  className="ml-2 flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
-                >
-                  <Download className="h-3.5 w-3.5" /> Ver PDF
-                </button>
-              </div>
-
-              {doc.hallazgos.length > 0 ? (
-                <div className="space-y-3">
-                  {doc.hallazgos.map((h, i) => (
-                    <div
-                      key={i}
-                      className="border-l-2 border-[#e81c24] py-0.5 pl-3 text-xs"
+            return (
+              <div
+                key={idx}
+                className={`${PANEL_BASE} p-5 ${
+                  tieneDiscrepancia
+                    ? "border-amber-400/70 bg-amber-50/30"
+                    : "border-slate-900/[0.07] bg-white/70"
+                }`}
+              >
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
+                        tieneDiscrepancia
+                          ? "bg-amber-500/20 text-amber-700"
+                          : "bg-[#e81c24]/20 text-[#e81c24]"
+                      }`}
                     >
-                      <p className="font-medium text-slate-900">
-                        {h.regla}: {h.detalle}
-                      </p>
-                      <p className="mt-0.5 italic text-slate-500">
-                        Evidencia: {h.evidencia}
-                      </p>
-                    </div>
-                  ))}
+                      {tieneDiscrepancia ? (
+                        <AlertTriangle className="h-5 w-5" />
+                      ) : (
+                        <FileText className="h-5 w-5" />
+                      )}
+                    </span>
+                    <h4 className={`${DISPLAY} truncate text-base font-bold`}>
+                      {doc.tipo}
+                    </h4>
+                  </div>
+                  <span
+                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+                      tieneDiscrepancia
+                        ? "border border-amber-500/40 bg-amber-500/15 text-amber-800"
+                        : "bg-slate-900/[0.06] text-slate-700"
+                    }`}
+                  >
+                    {tieneDiscrepancia && (
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                    )}
+                    {doc.estatus}
+                  </span>
                 </div>
-              ) : (
-                <p className="text-xs italic text-slate-500">
-                  Esperando extracción de hallazgos del agente...
-                </p>
-              )}
-            </div>
-          ))}
+
+                <div className="mb-4 flex items-center justify-between gap-2 rounded-2xl bg-slate-900/[0.04] px-3.5 py-2.5 text-xs">
+                  <span className="truncate text-slate-500">
+                    {doc.nombreArchivo}
+                  </span>
+                  <button
+                    onClick={() => setDocVista(doc)}
+                    className="ml-2 flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
+                  >
+                    <Download className="h-3.5 w-3.5" /> Ver PDF
+                  </button>
+                </div>
+
+                {doc.hallazgos.length > 0 ? (
+                  <div className="space-y-3">
+                    {doc.hallazgos.map((h, i) => (
+                      <div
+                        key={i}
+                        className={`border-l-2 py-0.5 pl-3 text-xs ${
+                          tieneDiscrepancia
+                            ? "border-amber-500"
+                            : "border-[#e81c24]"
+                        }`}
+                      >
+                        <p className="font-medium text-slate-900">
+                          {h.regla}: {h.detalle}
+                        </p>
+                        <p className="mt-0.5 italic text-slate-500">
+                          Evidencia: {h.evidencia}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs italic text-slate-500">
+                    Esperando extracción de hallazgos del agente...
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {docVista && <ModalEvidencia doc={docVista} onClose={cerrarVista} />}
@@ -844,7 +879,7 @@ export default function BandejaAdmin({ expedientes }) {
                 setFiltro("todos");
                 setBusqueda("");
               }}
-              className="mt-4 cursor-pointer rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="mt-4 cursor-pointer rounded-full bg-[#e81c24] px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               Limpiar filtros
             </button>
@@ -889,7 +924,7 @@ export default function BandejaAdmin({ expedientes }) {
               <div className="md:text-right">
                 <button
                   onClick={() => setSeleccionado(exp)}
-                  className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24] md:w-auto"
+                  className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#e81c24] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24] md:w-auto"
                 >
                   <Eye className="h-4 w-4" />
                   Revisar expediente
