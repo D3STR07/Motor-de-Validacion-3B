@@ -1,0 +1,16 @@
+# Dependencias y entornos
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+# Variables de entorno y secretos
+.env
+.env.*
+*.pem
+*.key
+
+# Logs y temporales
+*.log
+dist/
+build/.venv/
