@@ -9,7 +9,7 @@ __pycache__/
 .env.*
 *.pem
 *.key
-
+.venv
 # Logs y temporales
 *.log
 dist/
