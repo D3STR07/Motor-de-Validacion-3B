@@ -1,8 +1,14 @@
 
 from typing import Optional
-from pydantic import BaseModel, Field
+from datetime import datetime
+
+from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 
+
+# =====================================================
+# TIPOS DE DOCUMENTO
+# =====================================================
 
 class TipoDocumento(str, Enum):
     ESCRITURAS = "escrituras"
@@ -11,11 +17,19 @@ class TipoDocumento(str, Enum):
     USO_DE_SUELO = "uso_suelo"
 
 
+# =====================================================
+# LEGIBILIDAD OCR
+# =====================================================
+
 class ClasificacionLegibilidad(str, Enum):
     LEGIBLE = "LEGIBLE"
     PARCIALMENTE_LEGIBLE = "PARCIALMENTE_LEGIBLE"
     ILEGIBLE = "ILEGIBLE"
 
+
+# =====================================================
+# MODELOS OCR
+# =====================================================
 
 class PaginaOCR(BaseModel):
     clasificacion: ClasificacionLegibilidad
@@ -42,3 +56,18 @@ class DocumentoOCR(BaseModel):
     total_paginas: int
     resumen_legibilidad: ResumenLegibilidad
     paginas: list[PaginaOCR] = Field(default_factory=list)
+
+
+# =====================================================
+# RESPUESTA DEL BACKEND
+# =====================================================
+
+class DocumentoResponse(BaseModel):
+    id: int
+    expediente_id: int
+    nombre_archivo: str
+    tipo_documento: str
+    estado_procesamiento: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
