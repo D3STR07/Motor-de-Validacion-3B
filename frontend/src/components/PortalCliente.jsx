@@ -12,6 +12,7 @@ import {
   MapPin,
   Store,
   Check,
+  ArrowLeft,
 } from "lucide-react";
 
 const DISPLAY = "font-['Bricolage_Grotesque',ui-sans-serif,system-ui,sans-serif]";
@@ -91,7 +92,7 @@ function Anillo({ listos, total, tam = "h-36 w-36" }) {
   );
 }
 
-export default function PortalCliente({ onEnviarExpediente }) {
+export default function PortalCliente({ onEnviarExpediente, onVolver }) {
   const [inmueble, setInmueble] = useState("");
   const [cliente, setCliente] = useState("");
   const [archivos, setArchivos] = useState(ARCHIVOS_VACIOS);
@@ -171,15 +172,27 @@ export default function PortalCliente({ onEnviarExpediente }) {
           <Anillo listos={total} total={total} tam="h-32 w-32" />
           <h2 className={`${DISPLAY} mt-6 text-2xl font-bold sm:text-3xl`}>Todo en camino</h2>
           <p className="mt-2 max-w-sm text-sm leading-relaxed text-slate-600">
-            Los 4 documentos de <strong className="text-slate-900">{inmueble}</strong> ya los están
-            revisando nuestros agentes de IA. Legal 3B verá el dictamen en cuanto terminen.
+            Los 4 documentos de <strong className="text-slate-900">{inmueble}</strong> ya los está
+            revisando nuestro equipo de 3B.
           </p>
-          <button
-            onClick={reiniciar}
-            className="mt-7 cursor-pointer rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
-          >
-            Subir otro inmueble
-          </button>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            {onVolver && (
+              <button
+                type="button"
+                onClick={onVolver}
+                className="cursor-pointer rounded-full bg-[#e81c24] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#f0262e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
+              >
+                Volver a mis locales
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={reiniciar}
+              className="cursor-pointer rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
+            >
+              Subir otro inmueble
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -187,7 +200,17 @@ export default function PortalCliente({ onEnviarExpediente }) {
 
   /* ---------- Formulario ---------- */
   return (
-    <div className="relative z-10 mx-auto max-w-4xl px-4 py-8 text-slate-900 sm:px-6 sm:py-10">
+    <div className="relative z-10 mx-auto max-w-4xl space-y-5 px-4 py-8 text-slate-900 sm:px-6 sm:py-10">
+      {onVolver && (
+  <button
+    type="button"
+    onClick={onVolver}
+    className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#e81c24] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(232,28,36,0.75)] transition hover:bg-[#f0262e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e81c24]"
+  >
+    <ArrowLeft className="h-4 w-4" /> Volver 
+  </button>
+)}
+
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Datos del predio */}
         <div className={`${PANEL} p-6 sm:p-8`}>
@@ -195,7 +218,7 @@ export default function PortalCliente({ onEnviarExpediente }) {
             Registra un nuevo predio o local
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-500">
-            Sube los 4 documentos legales y el sistema los clasifica y compara entre sí por ti.
+            Sube los 4 documentos legales y nuestro equipo lo revisará.
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -280,7 +303,7 @@ export default function PortalCliente({ onEnviarExpediente }) {
               Enviar documentación
             </button>
             <p className="mt-2.5 text-center text-xs text-slate-500">
-              Los 4 documentos son obligatorios para iniciar la validación cruzada.
+              Los 4 documentos son obligatorios para que nuestro equipo revise que todos tus papeles coincidan.
             </p>
           </div>
         </div>

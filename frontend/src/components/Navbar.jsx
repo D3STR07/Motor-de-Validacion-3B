@@ -30,7 +30,7 @@ export default function Navbar({ perfilActivo, setPerfilActivo }) {
           {/* Logo y título */}
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-10 shrink-0 items-center rounded-xl bg-white px-2">
-              <img src={logo3b} alt="Logo Tiendas 3B" className="h-7 w-auto object-contain" />
+              <img src={logo3b} alt="Logo Tiendas 3B" className="h-14 w-auto object-contain" />
             </div>
             <div className="hidden min-w-0 lg:block">
               <h1 className={`${DISPLAY} truncate text-base font-bold leading-tight text-slate-900`}>
